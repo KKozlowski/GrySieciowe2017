@@ -42,6 +42,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\Events.cs">
+      <Link>Events.cs</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\PlayerSession.cs">
+      <Link>PlayerSession.cs</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\PlayerState.cs">
+      <Link>PlayerState.cs</Link>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
