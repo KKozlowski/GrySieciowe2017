@@ -80,6 +80,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\Gameplay\CharacterController.cs" />
     <Compile Include="Assets\Scripts\Gameplay\PlayerInput.cs" />
+    <Compile Include="Assets\Scripts\Gameplay\TrackingCamera.cs" />
     <Compile Include="Assets\Scripts\Networking\Events.cs" />
     <Compile Include="Assets\Scripts\Networking\PlayerSession.cs" />
     <Compile Include="Assets\Scripts\Networking\PlayerState.cs" />
