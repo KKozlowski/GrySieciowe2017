@@ -1,8 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-public class PlayerSession
+public class Network
 {
-    int m_playerId;
-    string m_ip;
+
 }

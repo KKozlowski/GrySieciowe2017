@@ -4,10 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Server {
+namespace ServerApp {
     class Program {
         static void Main(string[] args) {
-            Console.WriteLine("Hello there");
+            Server srv = new Server();
+            srv.Start( 1111 );
+
+            while( true )
+            {
+
+            }
         }
     }
 }

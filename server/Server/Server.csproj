@@ -32,6 +32,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\*.cs">
+      <Link>Networking\A\</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -42,15 +47,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\client\Assets\Scripts\Networking\Events.cs">
-      <Link>Events.cs</Link>
-    </Compile>
-    <Compile Include="..\..\client\Assets\Scripts\Networking\PlayerSession.cs">
-      <Link>PlayerSession.cs</Link>
-    </Compile>
-    <Compile Include="..\..\client\Assets\Scripts\Networking\PlayerState.cs">
-      <Link>PlayerState.cs</Link>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
