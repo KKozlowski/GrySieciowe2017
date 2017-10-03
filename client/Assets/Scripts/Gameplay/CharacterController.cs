@@ -7,10 +7,12 @@ public class CharacterController : MonoBehaviour {
 	public static CharacterController Player { get; private set; }
     public LineRenderer laser;
 
+    [SerializeField]
+    private bool player = false;
+
     private void Awake() {
-        //To be updated when there are more players
-        Player = this;
-        
+        if (player)
+            Player = this;
     }
 
     private void Start() {

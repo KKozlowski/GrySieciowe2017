@@ -573,3 +573,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   laser: {fileID: 1432638844}
+  player: 1
