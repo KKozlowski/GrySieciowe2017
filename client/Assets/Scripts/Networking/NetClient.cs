@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define LOG
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Net.Sockets;
@@ -42,6 +44,10 @@ public class NetworkListener
         m_socket.ReceiveBufferSize = 512;
         m_socket.Listen( 10 );
         m_remote = m_socket.Accept();
+
+#if LOG
+        Net.Dbg.Log( "NetworkListener: Accepted socket: " + ( ( IPEndPoint )m_remote.LocalEndPoint ).ToString() );
+#endif
 
         // HACK!
         m_address = ( ( IPEndPoint )m_remote.LocalEndPoint ).Address;
@@ -88,15 +94,19 @@ public class NetworkListener
             m_thread.Interrupt();
         }
 
-        if (m_remote != null)
+        if (m_remote != null && m_remote.Connected )
         {
             m_remote.Shutdown( SocketShutdown.Both );
         }
 
-        if (m_socket != null)
+        if (m_socket != null && m_socket.Connected )
         {
             m_socket.Shutdown( SocketShutdown.Both );
         }
+
+#if LOG
+        Net.Dbg.Log( "Network listener shutdown" );
+#endif
     }
 }
 
@@ -139,20 +149,6 @@ public class Connection
         m_socket.Connect( m_address, m_port );
     }
 
-    public void Close()
-    {
-        if ( m_socket != null )
-        {
-            m_socket.Shutdown( SocketShutdown.Both );
-            m_socket.Close();
-        }
-
-        if ( m_thread != null )
-        {
-            m_thread.Interrupt();
-        }
-    }
-
     public void Send( byte[] data )
     {
         m_socket.Send( data );
@@ -170,10 +166,14 @@ public class Connection
             m_thread.Interrupt();
         }
 
-        if (m_socket != null)
+        if (m_socket != null && m_socket.Connected )
         {
             m_socket.Shutdown(SocketShutdown.Both);
         }
+
+#if LOG
+        Net.Dbg.Log( "Connection shutdown" );
+#endif
     }
 }
 
@@ -182,7 +182,7 @@ public class Client
     NetworkListener m_listener;
     Connection m_sender;
 
-    public void InitConnection( string ip, int receivePort )
+    public void Connect( string ip, int receivePort )
     {
         m_sender = new Connection();
         m_listener = new NetworkListener();
@@ -200,6 +200,15 @@ public class Client
     void OnData( byte[] data, int size )
     {
         int result = BitConverter.ToInt32( data, 0 );
+    }
+
+    public void Shutdown()
+    {
+        if ( m_sender != null )
+            m_sender.Shutdown();
+
+        if ( m_listener != null )
+            m_listener.Shutdown();
     }
 }
 
