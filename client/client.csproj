@@ -87,6 +87,7 @@
     <Compile Include="Assets\Scripts\Networking\Network.cs" />
     <Compile Include="Assets\Scripts\Networking\PlayerSession.cs" />
     <Compile Include="Assets\Scripts\Networking\PlayerState.cs" />
+    <Compile Include="Assets\Scripts\Networking\SerializationHelpers.cs" />
     <Compile Include="Assets\Scripts\PlayerConnection.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
