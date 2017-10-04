@@ -17,6 +17,11 @@ public class NetworkListener
 
     bool m_initialized = false;
 
+    ~NetworkListener()
+    {
+        Shutdown();
+    }
+
     public void StartListening( int port, Action<byte[], int> dataCallback )
     {
         System.Diagnostics.Debug.Assert( !m_initialized, "Already initialized" );
@@ -66,7 +71,7 @@ public class NetworkListener
         return ( IPEndPoint )m_remote.LocalEndPoint;
     }
 
-    internal bool Connected()
+    public bool Connected()
     {
         if ( m_remote == null || m_socket == null )
         {
@@ -75,17 +80,39 @@ public class NetworkListener
 
         return m_remote.Connected;
     }
+
+    public void Shutdown()
+    {
+        if (m_thread != null)
+        {
+            m_thread.Interrupt();
+        }
+
+        if (m_remote != null)
+        {
+            m_remote.Shutdown( SocketShutdown.Both );
+        }
+
+        if (m_socket != null)
+        {
+            m_socket.Shutdown( SocketShutdown.Both );
+        }
+    }
 }
 
 public class Connection
 {
     Socket m_socket;
     Thread m_thread;
+    IPAddress m_address; // end point address
 
+    int m_port;
     bool m_initialized = false;
 
-    IPAddress m_address; // end point address
-    int m_port;
+    ~Connection()
+    {
+        Shutdown();
+    }
 
     public void Connect( string ip, int port )
     {
@@ -134,6 +161,19 @@ public class Connection
     public int GetPort()
     {
         return m_port;
+    }
+
+    public void Shutdown()
+    {
+        if (m_thread != null)
+        {
+            m_thread.Interrupt();
+        }
+
+        if (m_socket != null)
+        {
+            m_socket.Shutdown(SocketShutdown.Both);
+        }
     }
 }
 
