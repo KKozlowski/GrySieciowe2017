@@ -8,10 +8,9 @@ using System.Threading;
 using System.Diagnostics;
 using System.Net;
 
-public class NetworkListener
+public class ConnectionListener
 {
     Socket m_socket;
-    Socket m_remote;
     Thread m_thread;
 
     IPAddress m_address; // end point address
@@ -19,87 +18,47 @@ public class NetworkListener
 
     bool m_initialized = false;
 
-    ~NetworkListener()
+    ~ConnectionListener()
     {
         Shutdown();
     }
 
-    public void StartListening( int port, Action<byte[], int> dataCallback )
+    public void Init( int port )
     {
         System.Diagnostics.Debug.Assert( !m_initialized, "Already initialized" );
 
-        m_initialized = true;
-
-        m_port = port;
-
-        m_thread = new Thread( () => ListeningProc( dataCallback ) );
-        m_thread.Start();
-    }
-
-    void ListeningProc( Action<byte[], int> dataCallback )
-    {
         m_socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
         m_socket.Bind( new IPEndPoint( IPAddress.Parse( "127.0.0.1" ), m_port ) );
 
-        m_socket.ReceiveBufferSize = 512;
-        m_socket.Listen( 10 );
-        m_remote = m_socket.Accept();
+        m_initialized = true;
+    }
 
-#if LOG
-        Net.Dbg.Log( "NetworkListener: Accepted socket: " + ( ( IPEndPoint )m_remote.LocalEndPoint ).ToString() );
-#endif
-
-        // HACK!
-        m_address = ( ( IPEndPoint )m_remote.LocalEndPoint ).Address;
-
-        m_thread = new Thread( () => ReceiveProc( dataCallback ) );
+    public void StartListening( Action<Socket> acceptedCallback )
+    {
+        m_thread = new Thread( () => ListeningProc( acceptedCallback ) );
         m_thread.Start();
     }
 
-    void ReceiveProc( Action<byte[], int> dataCallback )
+    void ListeningProc( Action<Socket> acceptedCallback )
     {
-        m_remote.ReceiveBufferSize = 512;
+        m_socket.Listen( 1 );
+        Socket remote = m_socket.Accept();
 
-        while ( m_remote.Connected )
-        {
-            byte[] buffer = new byte[ 512 ];
-            int size = m_remote.Receive( buffer );
+#if LOG
+        Net.Dbg.Log( "NetworkListener: Accepted socket: " + ( ( IPEndPoint )remote.LocalEndPoint ).ToString() );
+#endif
 
-            if ( size > 0 )
-            {
-                dataCallback.Invoke( buffer, size );
-            }
-        }
-    }
-
-    public IPEndPoint RemoteEndPoint()
-    {
-        return ( IPEndPoint )m_remote.LocalEndPoint;
-    }
-
-    public bool Connected()
-    {
-        if ( m_remote == null || m_socket == null )
-        {
-            return false;
-        }
-
-        return m_remote.Connected;
+        acceptedCallback( remote );
     }
 
     public void Shutdown()
     {
-        if (m_thread != null)
+        if ( m_thread != null )
         {
             m_thread.Interrupt();
         }
 
-        if (m_remote != null && m_remote.Connected )
-        {
-            m_remote.Shutdown( SocketShutdown.Both );
-        }
-
-        if (m_socket != null && m_socket.Connected )
+        if ( m_socket != null && m_socket.Connected )
         {
             m_socket.Shutdown( SocketShutdown.Both );
         }
@@ -114,9 +73,7 @@ public class Connection
 {
     Socket m_socket;
     Thread m_thread;
-    IPAddress m_address; // end point address
 
-    int m_port;
     bool m_initialized = false;
 
     ~Connection()
@@ -127,13 +84,43 @@ public class Connection
     public void Connect( string ip, int port )
     {
         System.Diagnostics.Debug.Assert( !m_initialized, "Already initialized" );
-        m_initialized = true;
-        m_port = port;
-        m_address = IPAddress.Parse( ip );
+
+        IPAddress address = IPAddress.Parse( ip );
 
         m_socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
-        m_thread = new Thread( ConnectProc );
+        m_thread = new Thread( () => ConnectProc( address, port ) );
         m_thread.Start();
+
+        m_initialized = true;
+    }
+
+    public void InitListener( Socket listenerSocket )
+    {
+        System.Diagnostics.Debug.Assert( !m_initialized, "Already initialized" );
+        m_initialized = true;
+
+        m_socket = listenerSocket;
+        m_thread = new Thread( ReceiveProc );
+        m_thread.Start();
+    }
+
+    void ReceiveProc()
+    {
+        while ( m_socket.Connected )
+        {
+            byte[] data = new byte[ 512 ];
+            int size = m_socket.Receive( data );
+
+            if ( size > 0 )
+            {
+                OnData( data );
+            }
+        }
+    }
+
+    void OnData( byte[] data )
+    {
+
     }
 
     public bool Connected()
@@ -144,9 +131,9 @@ public class Connection
         return m_socket.Connected;
     }
 
-    void ConnectProc()
+    void ConnectProc( IPAddress addr, int port )
     {
-        m_socket.Connect( m_address, m_port );
+        m_socket.Connect( addr, port );
     }
 
     public void Send( byte[] data )
@@ -154,21 +141,16 @@ public class Connection
         m_socket.Send( data );
     }
 
-    public int GetPort()
-    {
-        return m_port;
-    }
-
     public void Shutdown()
     {
-        if (m_thread != null)
+        if ( m_thread != null )
         {
             m_thread.Interrupt();
         }
 
-        if (m_socket != null && m_socket.Connected )
+        if ( m_socket != null && m_socket.Connected )
         {
-            m_socket.Shutdown(SocketShutdown.Both);
+            m_socket.Shutdown( SocketShutdown.Both );
         }
 
 #if LOG
@@ -179,22 +161,26 @@ public class Connection
 
 public class Client
 {
-    NetworkListener m_listener;
+    ConnectionListener m_listener;
     Connection m_sender;
+    Connection m_receiver;
 
     public void Connect( string ip, int receivePort )
     {
         m_sender = new Connection();
-        m_listener = new NetworkListener();
+        m_listener = new ConnectionListener();
 
-        m_listener.StartListening( receivePort, OnData );
+        m_listener.Init( receivePort );
+        m_listener.StartListening( OnAccepted );
         m_sender.Connect( ip, receivePort + 1 );
+    }
 
-        while ( m_listener.Connected() == false )
-        {
-            Thread.Sleep( 10 );
-        }
-        System.Diagnostics.Debug.Assert( m_sender.Connected() );
+    void OnAccepted( Socket remoteSender )
+    {
+        m_receiver = new Connection();
+        m_receiver.InitListener( remoteSender );
+
+        m_listener.StartListening( OnAccepted );
     }
 
     void OnData( byte[] data, int size )
@@ -214,39 +200,44 @@ public class Client
 
 public class Server
 {
-    Connection m_clientConnection;
-    NetworkListener m_currentListener;
-    Thread m_waitForConnection;
+    class ConnectionEntity
+    {
+        public Connection m_sender;
+        public Connection m_receiver;
+    }
+
+    List< ConnectionEntity > m_entities = new List<ConnectionEntity>();
+
+    ConnectionListener m_connector;
+
+    int m_sendingPort;
+    int m_receivePort;
 
     public void Start( int port )
     {
-        m_currentListener = new NetworkListener();
-        m_currentListener.StartListening( port + 1, OnData );
+        m_sendingPort = port;
+        m_receivePort = port + 1;
 
-        m_waitForConnection = new Thread( WaitForConnectionProc );
-        m_waitForConnection.Start();
+        m_connector = new ConnectionListener();
+        m_connector.Init( m_receivePort );
+        m_connector.StartListening( OnAccepted );
     }
 
-    void WaitForConnectionProc()
+    void OnAccepted( Socket remote )
     {
-        while ( m_currentListener.Connected() == false )
+        Connection receiver = new Connection();
+        receiver.InitListener( remote );
+
+        Connection sender = new Connection();
+        IPEndPoint endPoint = (IPEndPoint)remote.LocalEndPoint;
+        sender.Connect( endPoint.Address.ToString(), m_sendingPort );
+
+        ConnectionEntity newEntity = new ConnectionEntity()
         {
-            Thread.Sleep( 10 );
-        }
+            m_receiver = receiver,
+            m_sender = sender
+        };
 
-        m_clientConnection = new Connection();
-        IPEndPoint endPoint = m_currentListener.RemoteEndPoint();
-        m_clientConnection.Connect( endPoint.Address.ToString(), endPoint.Port - 1 );
-
-        while ( m_clientConnection.Connected() == false )
-        {
-            Thread.Sleep( 10 );
-        }
-
-        m_clientConnection.Send( BitConverter.GetBytes( (int) 32 ) );
-    }
-
-    void OnData( byte[] data, int size )
-    {
+        m_entities.Add( newEntity );
     }
 }
