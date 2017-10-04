@@ -41,7 +41,7 @@ public class ConnectionListener
 
     void ListeningProc( Action<Socket> acceptedCallback )
     {
-        m_socket.Listen( 1 );
+        m_socket.Listen( 10 );
         Socket remote = m_socket.Accept();
 
 #if LOG
@@ -167,11 +167,11 @@ public class Client
 
     public void Connect( string ip, int receivePort )
     {
-        m_sender = new Connection();
         m_listener = new ConnectionListener();
-
         m_listener.Init( receivePort );
         m_listener.StartListening( OnAccepted );
+
+        m_sender = new Connection();
         m_sender.Connect( ip, receivePort + 1 );
     }
 
@@ -179,8 +179,6 @@ public class Client
     {
         m_receiver = new Connection();
         m_receiver.InitListener( remoteSender );
-
-        m_listener.StartListening( OnAccepted );
     }
 
     void OnData( byte[] data, int size )
@@ -213,10 +211,10 @@ public class Server
     int m_sendingPort;
     int m_receivePort;
 
-    public void Start( int port )
+    public void Start( int sendingPort )
     {
-        m_sendingPort = port;
-        m_receivePort = port + 1;
+        m_sendingPort = sendingPort;
+        m_receivePort = sendingPort + 1;
 
         m_connector = new ConnectionListener();
         m_connector.Init( m_receivePort );
