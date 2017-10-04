@@ -19,6 +19,41 @@ public static class SerializationHelpers {
         return BitConverter.ToUInt32(bytes, offset);
     }
 
+    public static byte[] Serialize(this short i) {
+        return BitConverter.GetBytes(i);
+    }
+    public static short DeserializeShort(this byte[] bytes, int offset = 0) {
+        return BitConverter.ToInt16(bytes, offset);
+    }
+
+    public static byte[] Serialize(this ushort i) {
+        return BitConverter.GetBytes(i);
+    }
+    public static ushort DeserializeUnsignedShort(this byte[] bytes, int offset = 0) {
+        return BitConverter.ToUInt16(bytes, offset);
+    }
+
+    public static byte[] Serialize(this long i) {
+        return BitConverter.GetBytes(i);
+    }
+    public static long DeserializeLong(this byte[] bytes, int offset = 0) {
+        return BitConverter.ToInt64(bytes, offset);
+    }
+
+    public static byte[] Serialize(this ulong i) {
+        return BitConverter.GetBytes(i);
+    }
+    public static ulong DeserializeUnsignedLong(this byte[] bytes, int offset = 0) {
+        return BitConverter.ToUInt64(bytes, offset);
+    }
+
+    public static byte[] Serialize(this float i) {
+        return BitConverter.GetBytes(i);
+    }
+    public static float DeserializeFloat(this byte[] bytes, int offset = 0) {
+        return BitConverter.ToSingle(bytes, offset);
+    }
+
     public static byte[] Serialize(this Vector2 vector) {
         byte[] bytes = new byte[8];
         Array.Copy(BitConverter.GetBytes(vector.x), 0, bytes, 0, 4);
