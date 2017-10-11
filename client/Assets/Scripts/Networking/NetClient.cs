@@ -73,7 +73,6 @@ public class Listener
 public class Connection
 {
     Socket m_socket;
-
     bool m_initialized = false;
 
     ~Connection()
@@ -84,7 +83,6 @@ public class Connection
     public void Connect( string ip, int port )
     {
         System.Diagnostics.Debug.Assert( !m_initialized, "Already initialized" );
-
         m_socket = new Socket( AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp );
 
         IPAddress address = IPAddress.Parse( ip );
@@ -132,6 +130,16 @@ public class Connection
     }
 }
 
+public class IdAllocator
+{
+    private int m_next = 0;
+
+    public int Allocate()
+    {
+        return m_next++;
+    }
+}
+
 public class Client
 {
     Listener m_listener;
@@ -164,14 +172,28 @@ public class Client
     }
 }
 
+public class UnreliableEventSender
+{
+    class EventSending
+    {
+        public int m_connectionId;
+        public byte[] m_data;
+        public int m_eventId = -1;
+        public int m_attempts = 0;
+    }
+
+    List< EventSending > m_events = new List<EventSending>();
+}
+
 public class Server
 {
     class ConnectionEntity
     {
         public Connection m_sender;
-        public Connection m_receiver;
+        public int m_connectionId;
     }
 
+    IdAllocator m_connectionId = new IdAllocator();
     List< ConnectionEntity > m_entities = new List<ConnectionEntity>();
 
     Listener m_listener;
