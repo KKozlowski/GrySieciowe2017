@@ -70,77 +70,7 @@ public class Listener
     }
 }
 
-public class Connection
-{
-    Socket m_socket;
-    bool m_initialized = false;
-
-    ~Connection()
-    {
-        Shutdown();
-    }
-
-    public void Connect( string ip, int port )
-    {
-        System.Diagnostics.Debug.Assert( !m_initialized, "Already initialized" );
-        m_socket = new Socket( AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp );
-
-        IPAddress address = IPAddress.Parse( ip );
-        m_socket.Connect( address, port );
-
-        m_initialized = true;
-    }
-
-    public void InitListener( Socket listenerSocket )
-    {
-        System.Diagnostics.Debug.Assert( !m_initialized, "Already initialized" );
-        m_initialized = true;
-
-        m_socket = listenerSocket;
-    }
-
-    public bool Connected()
-    {
-        if ( m_socket == null )
-            return false;
-
-        return m_socket.Connected;
-    }
-
-    void ConnectProc( IPAddress addr, int port )
-    {
-        m_socket.Connect( addr, port );
-    }
-
-    public void Send( byte[] data )
-    {
-        m_socket.Send( data );
-    }
-
-    public void Shutdown()
-    {
-        if ( m_socket != null && m_socket.Connected )
-        {
-            m_socket.Shutdown( SocketShutdown.Both );
-        }
-
-#if LOG
-        Net.Dbg.Log( "Connection shutdown" );
-#endif
-    }
-}
-
-public class IdAllocator
-{
-    private int m_next = 0;
-
-    public int Allocate()
-    {
-        return m_next++;
-    }
-}
-
-public class Client
+public class NetClient
 {
     Listener m_listener;
     Connection m_sender;
@@ -174,39 +104,13 @@ public class Client
 
 public class UnreliableEventSender
 {
+    IdAllocator m_eventsId = new IdAllocator();
+
     class EventSending
     {
         public int m_connectionId;
         public byte[] m_data;
         public int m_eventId = -1;
         public int m_attempts = 0;
-    }
-
-    List< EventSending > m_events = new List<EventSending>();
-}
-
-public class Server
-{
-    class ConnectionEntity
-    {
-        public Connection m_sender;
-        public int m_connectionId;
-    }
-
-    IdAllocator m_connectionId = new IdAllocator();
-    List< ConnectionEntity > m_entities = new List<ConnectionEntity>();
-
-    Listener m_listener;
-
-    int m_sendingPort;
-    int m_receivePort;
-
-    public void Start( int sendingPort )
-    {
-        m_sendingPort = sendingPort;
-        m_receivePort = sendingPort + 1;
-
-        m_listener = new Listener();
-        m_listener.Init( m_receivePort );
     }
 }

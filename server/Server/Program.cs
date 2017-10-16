@@ -8,7 +8,7 @@ using UnityEngine;
 namespace ServerApp {
     class Program {
         static void Main(string[] args) {
-            Server srv = new Server();
+            NetServer srv = new NetServer();
             srv.Start( 1111 );
 
             {

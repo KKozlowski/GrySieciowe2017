@@ -23,7 +23,6 @@ public abstract class EventBase : IEvent {
     }
 
     public abstract new string ToString();
-
     public abstract EventType TypeId { get; }
 }
 

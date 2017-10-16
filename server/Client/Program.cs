@@ -11,7 +11,7 @@ namespace ClientApp
     {
         static void Main( string[] args )
         {
-            Client client = new Client();
+            NetClient client = new NetClient();
             client.Connect( "127.0.0.1", 1111 );
             
             while ( true )
