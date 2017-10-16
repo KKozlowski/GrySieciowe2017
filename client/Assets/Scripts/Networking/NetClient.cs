@@ -8,68 +8,6 @@ using System.Threading;
 using System.Diagnostics;
 using System.Net;
 
-public class Listener
-{
-    Socket m_socket;
-    Thread m_receivingThread;
-
-    bool m_initialized = false;
-
-    ~Listener()
-    {
-        Shutdown();
-    }
-
-    public void Init( int port )
-    {
-        System.Diagnostics.Debug.Assert( !m_initialized, "Already initialized" );
-
-        m_socket = new Socket( AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp );
-        m_socket.Bind( new IPEndPoint( IPAddress.Parse( "127.0.0.1" ), port ) );
-
-        m_initialized = true;
-
-        m_receivingThread = new Thread( ReceiveProc );
-        m_receivingThread.Start();
-    }
-
-    public void Shutdown()
-    {
-        if ( m_receivingThread != null )
-        {
-            m_receivingThread.Interrupt();
-        }
-
-        if ( m_socket != null && m_socket.Connected )
-        {
-            m_socket.Shutdown( SocketShutdown.Both );
-        }
-
-#if LOG
-        Net.Dbg.Log( "Network listener shutdown" );
-#endif
-    }
-
-    void ReceiveProc()
-    {
-        while ( true )
-        {
-            byte[] data = new byte[ 512 ];
-            int size = m_socket.Receive( data );
-
-            if ( size > 0 )
-            {
-                OnData( data );
-            }
-        }
-    }
-
-    void OnData( byte[] data )
-    {
-
-    }
-}
-
 public class NetClient
 {
     Listener m_listener;

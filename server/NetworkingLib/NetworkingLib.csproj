@@ -51,6 +51,8 @@
   <ItemGroup>
     <Compile Include="Networking\Connection.cs" />
     <Compile Include="Networking\IdAllocator.cs" />
+    <Compile Include="Networking\Listener.cs" />
+    <Compile Include="Networking\MessageFactory.cs" />
     <Compile Include="Networking\NetServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

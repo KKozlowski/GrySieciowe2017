@@ -23,6 +23,12 @@ public class NetServer
 
         m_listener = new Listener();
         m_listener.Init( m_receivePort );
+        m_listener.SetDataCallback( OnData );
+    }
+
+    void OnData( byte[] data )
+    {
+
     }
 }
 
