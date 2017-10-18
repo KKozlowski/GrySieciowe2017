@@ -49,7 +49,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Networking\ByteStream.cs" />
     <Compile Include="Networking\Connection.cs" />
+    <Compile Include="Networking\FastMap.cs" />
     <Compile Include="Networking\IdAllocator.cs" />
     <Compile Include="Networking\Listener.cs" />
     <Compile Include="Networking\MessageFactory.cs" />

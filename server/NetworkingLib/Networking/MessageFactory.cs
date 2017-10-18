@@ -10,22 +10,47 @@ public enum MsgFlags : byte
     ConnectionRequest = 1 << 0,
     UnreliableEvent = 1 << 1,
     ReliableEvent = 1 << 2,
-    StreamingEvent = 1 << 3
+    State = 1 << 3
 }
 
 public class NetEventsFactory
 {
-    MemoryStream m_stream;
+    ByteStreamReader m_stream;
 
     public const int c_minPacketSize = 5; // flags + size
 
-    public bool SetData( byte[] data )
+    public NetEventsFactory()
+    {
+
+    }
+
+    public bool DeserializeData( byte[] data )
     {
         System.Diagnostics.Debug.Assert( data.Length >= c_minPacketSize );
-        m_stream = new MemoryStream( data );
+        m_stream = new ByteStreamReader( data );
 
+        byte flags = m_stream.ReadByte();
 
-        return true;
+        if ( HandleEvent( m_stream, flags ) )
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    bool HandleEvent( ByteStreamReader stream, byte flags )
+    {
+        if ( HasFlag( flags, ( byte )MsgFlags.UnreliableEvent ) )
+        {
+            return true;
+        }
+        else if ( HasFlag( flags, ( byte )MsgFlags.ReliableEvent ) )
+        {
+            return true;
+        }
+
+        return false;
     }
 
     bool HasFlag( byte flag, byte value )

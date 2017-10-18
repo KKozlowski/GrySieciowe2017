@@ -8,6 +8,7 @@ public static class SerializationHelpers {
     public static byte[] Serialize(this int i) {
         return BitConverter.GetBytes(i);
     }
+
     public static int DeserializeInteger(this byte[] bytes, int offset = 0) {
         return BitConverter.ToInt32(bytes, offset);
     }
