@@ -31,7 +31,46 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\client\Assets\Scripts\Networking\*.cs">
+    <Compile Include="..\..\client\Assets\Scripts\Networking\ByteStream.cs">
+      <Link>Networking\A\</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\Connection.cs">
+      <Link>Networking\A\</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\Debugging.cs">
+      <Link>Networking\A\</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\Events.cs">
+      <Link>Networking\A\</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\FastMap.cs">
+      <Link>Networking\A\</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\IdAllocator.cs">
+      <Link>Networking\A\</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\Listener.cs">
+      <Link>Networking\A\</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\MessageFactory.cs">
+      <Link>Networking\A\</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\NetClient.cs">
+      <Link>Networking\A\</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\NetServer.cs">
+      <Link>Networking\A\</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\Network.cs">
+      <Link>Networking\A\</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\PlayerSession.cs">
+      <Link>Networking\A\</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\PlayerState.cs">
+      <Link>Networking\A\</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\SerializationHelpers.cs">
       <Link>Networking\A\</Link>
     </Compile>
   </ItemGroup>
@@ -49,6 +88,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Networking\MessageDispatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

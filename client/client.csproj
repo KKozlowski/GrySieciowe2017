@@ -88,6 +88,7 @@
     <Compile Include="Assets\Scripts\Networking\FastMap.cs" />
     <Compile Include="Assets\Scripts\Networking\IdAllocator.cs" />
     <Compile Include="Assets\Scripts\Networking\Listener.cs" />
+    <Compile Include="Assets\Scripts\Networking\MessageDispatcher.cs" />
     <Compile Include="Assets\Scripts\Networking\MessageFactory.cs" />
     <Compile Include="Assets\Scripts\Networking\NetClient.cs" />
     <Compile Include="Assets\Scripts\Networking\NetServer.cs" />

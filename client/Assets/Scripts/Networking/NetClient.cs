@@ -20,14 +20,6 @@ public class NetClient
 
         m_sender = new Connection();
         m_sender.Connect( ip, receivePort + 1 );
-
-        byte[] msg = BitConverter.GetBytes( 2017 );
-        m_sender.Send( msg );
-    }
-
-    void OnData( byte[] data, int size )
-    {
-        int result = BitConverter.ToInt32( data, 0 );
     }
 
     public void Shutdown()
