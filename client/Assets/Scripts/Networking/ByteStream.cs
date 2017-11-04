@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class ByteStreamReader
 {
@@ -16,6 +17,18 @@ public class ByteStreamReader
         T result = converter( m_data, m_pos );
         m_pos += size;
         return result;
+    }
+
+    public Vector3 ReadVector2() {
+        return Read<Vector2>(SerializationHelpers.DeserializeVector2, sizeof(float) * 2);
+    }
+
+    public Vector3 ReadVector3() {
+        return Read<Vector3>(SerializationHelpers.DeserializeVector3, sizeof(float)*3);
+    }
+
+    public Quaternion ReadQuaternion() {
+        return Read<Quaternion>(SerializationHelpers.DeserializeQuaternion, sizeof(float) * 4);
     }
 
     public float ReadFloat()
@@ -41,4 +54,46 @@ public class ByteStreamReader
 
 public class ByteStreamWriter
 {
+    byte[] m_data;
+    List<byte> m_data_dynamic;
+
+    bool dirty = false;
+
+    void Write<T>(T obj, Func<T, byte[]> converter) {
+        byte[] result = converter(obj);
+        m_data_dynamic.AddRange(result);
+        dirty = true;
+    }
+
+    public void WriteVector2(Vector2 v) {
+        Write(v, SerializationHelpers.SerializeVector2);
+    }
+
+    public void WriteVector3(Vector3 v) {
+        Write(v, SerializationHelpers.SerializeVector3);
+    }
+
+    public void WriteQuaternion(Quaternion v) {
+        Write(v, SerializationHelpers.SerializeQuaternion);
+    }
+
+    public void WriteFloat(float f) {
+        Write(f, SerializationHelpers.SerializeFloat);
+    }
+
+    public void WriteInteger(int i) {
+        Write(i, SerializationHelpers.SerializeInteger);
+    }
+
+    public void WriteInteger(bool b) {
+        Write(b, SerializationHelpers.SerializeBool);
+    }
+
+    public byte[] GetBytes() {
+        if (dirty) {
+            m_data = m_data_dynamic.ToArray();
+            dirty = false;
+        }
+        return m_data;
+    }
 }
