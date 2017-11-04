@@ -12,7 +12,12 @@ namespace ClientApp
         static void Main( string[] args )
         {
             NetClient client = new NetClient();
+            MessageDeserializer deserializer = new MessageDeserializer();
+            client.SetDeserializer(deserializer);
+            deserializer.connectionMessagesReceiver = client;
+
             client.Connect( "127.0.0.1", 1111 );
+            Console.WriteLine("DD");
             
             while ( true )
             {

@@ -5,7 +5,7 @@ using UnityEngine;
 using System;
 
 public class PlayerState  {
-    public uint id;
+    public int id;
 
     public int health;
     public Vector2 position;
@@ -17,7 +17,7 @@ public class PlayerState  {
         byte[] header = new byte[5];
         Array.Copy(id.Serialize(), header, 4);
         ByteStreamWriter stream = new ByteStreamWriter();
-        stream.WriteUnsignedInt(id);
+        stream.WriteInteger(id);
 
         int changeMask = 0;
         if (changedHealth)
@@ -38,7 +38,7 @@ public class PlayerState  {
     }
 
     public bool ApplyMessage(ByteStreamReader bytes) {
-        uint thatID = bytes.ReadUnsignedInt();
+        int thatID = bytes.ReadInt();
         if (id != thatID)
             return false;
 

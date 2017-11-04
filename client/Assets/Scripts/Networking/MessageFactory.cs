@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Net;
 
 public enum MsgFlags : byte
 {
@@ -17,24 +18,30 @@ public class MessageDeserializer
 {
     ByteStreamReader m_stream;
 
-    public const int c_minPacketSize = 5; // flags + size
+    public const int c_maxPacketSize = 512;
 
     EventsFactory m_events;
     MessageDispatcher m_dispatcher;
+
+    public IHanshakable connectionMessagesReceiver;
 
     public MessageDeserializer()
     {
         m_events = new EventsFactory();
     }
 
-    public bool HandleData( byte[] data )
+    public bool HandleData( byte[] data, IPEndPoint endpoint = null )
     {
-        System.Diagnostics.Debug.Assert( data.Length >= c_minPacketSize );
+        System.Diagnostics.Debug.Assert( data.Length < c_maxPacketSize );
         m_stream = new ByteStreamReader( data );
 
         byte flags = m_stream.ReadByte();
 
         if ( HandleEvent( m_stream, flags ) )
+        {
+            return true;
+        }
+        if (HandleConnectionMsg(m_stream, flags, endpoint)) 
         {
             return true;
         }
@@ -54,6 +61,17 @@ public class MessageDeserializer
         }
         else if ( HasFlag( flags, ( byte )MsgFlags.ReliableEvent ) )
         {
+            return true;
+        }
+
+        return false;
+    }
+
+    bool HandleConnectionMsg(ByteStreamReader stream, byte flags, IPEndPoint endpoint) {
+        if (HasFlag(flags, (byte)MsgFlags.ConnectionRequest)) {
+            byte content = stream.ReadByte();
+            if (connectionMessagesReceiver != null)
+                connectionMessagesReceiver.HandleConnectionData((HandshakeMessage)content, stream, endpoint);
             return true;
         }
 

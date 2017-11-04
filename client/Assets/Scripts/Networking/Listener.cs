@@ -8,7 +8,7 @@ public class Listener
     UdpClient m_udp;
     Thread m_receivingThread;
     int m_port;
-    Action< byte[] > m_dataCallback;
+    Action< byte[], IPEndPoint> m_dataCallback;
 
     bool m_initialized = false;
 
@@ -46,7 +46,7 @@ public class Listener
 #endif
     }
 
-    public void SetDataCallback( Action<byte[]> onData )
+    public void SetDataCallback( Action<byte[], IPEndPoint> onData )
     {
         m_dataCallback = onData;
     }
@@ -61,7 +61,7 @@ public class Listener
             if ( data.Length > 0 )
             {
                 if ( m_dataCallback != null )
-                    m_dataCallback.Invoke( data );
+                    m_dataCallback.Invoke( data, endpoint );
             }
         }
     }

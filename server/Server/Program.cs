@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -9,6 +10,10 @@ namespace ServerApp {
     class Program {
         static void Main(string[] args) {
             NetServer srv = new NetServer();
+            MessageDeserializer deserializer = new MessageDeserializer();
+            srv.SetDeserializer(deserializer);
+            deserializer.connectionMessagesReceiver = srv;
+
             srv.Start( 1111 );
 
             {
@@ -29,7 +34,7 @@ namespace ServerApp {
 
             while( true )
             {
-
+                Thread.Sleep(50);
             }
         }
     }
