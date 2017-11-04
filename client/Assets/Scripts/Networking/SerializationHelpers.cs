@@ -5,6 +5,50 @@ using System;
 
 public static class SerializationHelpers {
 
+    public static byte[] SerializeInteger(int i) {
+        return i.Serialize();
+    }
+
+    public static byte[] SerializeUnsignedInt(uint i) {
+        return i.Serialize();
+    }
+
+    public static byte[] SerializeShort(short i) {
+        return i.Serialize();
+    }
+
+    public static byte[] SerializeUnsignedShort(ushort i) {
+        return i.Serialize();
+    }
+
+    public static byte[] SerializeLong(long i) {
+        return i.Serialize();
+    }
+
+    public static byte[] SerializeUnsignedLong(ulong i) {
+        return i.Serialize();
+    }
+
+    public static byte[] SerializeBool(bool b) {
+        return b.Serialize();
+    }
+
+    public static byte[] SerializeFloat(float i) {
+        return i.Serialize();
+    }
+
+    public static byte[] SerializeVector2(Vector2 i) {
+        return i.Serialize();
+    }
+
+    public static byte[] SerializeVector3(Vector3 i) {
+        return i.Serialize();
+    }
+
+    public static byte[] SerializeQuaternion(Quaternion i) {
+        return i.Serialize();
+    }
+
     public static byte[] Serialize(this int i) {
         return BitConverter.GetBytes(i);
     }
@@ -46,6 +90,13 @@ public static class SerializationHelpers {
     }
     public static ulong DeserializeUnsignedLong(this byte[] bytes, int offset = 0) {
         return BitConverter.ToUInt64(bytes, offset);
+    }
+
+    public static byte[] Serialize(this bool i) {
+        return BitConverter.GetBytes(i);
+    }
+    public static bool DeserializeBool(this byte[] bytes, int offset = 0) {
+        return BitConverter.ToBoolean(bytes, offset);
     }
 
     public static byte[] Serialize(this float i) {
