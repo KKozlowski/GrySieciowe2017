@@ -49,6 +49,13 @@ public class ByteStreamReader
 
     public bool ReadBool()
     {
+        List< float > dupa = new List<float>();
+
+        for ( Int16 i = 0; i < dupa.Count; ++i )
+        {
+            float a = dupa[i];
+        }
+
         return Read<bool>( BitConverter.ToBoolean, sizeof( bool ) );
     }
 
@@ -60,7 +67,6 @@ public class ByteStreamReader
 
 public class ByteStreamWriter
 {
-    byte[] m_data = new byte[0];
     List<byte> m_data_dynamic = new List<byte>();
 
     bool dirty = false;
@@ -105,10 +111,6 @@ public class ByteStreamWriter
     }
 
     public byte[] GetBytes() {
-        if (dirty) {
-            m_data = m_data_dynamic.ToArray();
-            dirty = false;
-        }
-        return m_data;
+        return m_data_dynamic.ToArray(); ;
     }
 }
