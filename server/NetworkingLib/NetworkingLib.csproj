@@ -73,7 +73,7 @@
     <Compile Include="..\..\client\Assets\Scripts\Networking\SerializationHelpers.cs">
       <Link>Networking\A\</Link>
     </Compile>
-	<Compile Include="..\..\client\Assets\Scripts\Networking\MessageDispatcher.cs">
+    <Compile Include="..\..\client\Assets\Scripts\Networking\MessageDispatcher.cs">
       <Link>Networking\A\</Link>
     </Compile>
   </ItemGroup>
