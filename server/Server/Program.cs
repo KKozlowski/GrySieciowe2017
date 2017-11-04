@@ -14,14 +14,14 @@ namespace ServerApp {
             {
                 PlayerState ps1 = new PlayerState();
                 ps1.position = new Vector2(300, 400);
-                ps1.id = 0;
+                ps1.id = 21;
                 ps1.health = 100;
 
-                byte[] msg = ps1.ConstructMessage(true, true);
+                ByteStreamWriter msg = ps1.ConstructMessage(true, true);
 
                 PlayerState ps2 = new PlayerState();
-                ps2.id = 0;
-                ps2.ApplyMessage(msg);
+                ps2.id = 21;
+                ps2.ApplyMessage(new ByteStreamReader(msg));
 
                 Console.WriteLine("ps2 position: " + ps2.position);
                 Console.WriteLine("ps2 health: " + ps2.health);

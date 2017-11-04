@@ -7,6 +7,8 @@ public class ByteStreamReader
     byte[] m_data;
     int m_pos = 0;
 
+    public ByteStreamReader(ByteStreamWriter writer) : this(writer.GetBytes()) { }
+
     public ByteStreamReader( byte[] data )
     {
         m_data = data;
@@ -41,6 +43,10 @@ public class ByteStreamReader
         return Read<int>( BitConverter.ToInt32, sizeof( int ) );
     }
 
+    public uint ReadUnsignedInt() {
+        return Read<uint>(BitConverter.ToUInt32, sizeof(uint));
+    }
+
     public bool ReadBool()
     {
         return Read<bool>( BitConverter.ToBoolean, sizeof( bool ) );
@@ -54,8 +60,8 @@ public class ByteStreamReader
 
 public class ByteStreamWriter
 {
-    byte[] m_data;
-    List<byte> m_data_dynamic;
+    byte[] m_data = new byte[0];
+    List<byte> m_data_dynamic = new List<byte>();
 
     bool dirty = false;
 
@@ -85,8 +91,17 @@ public class ByteStreamWriter
         Write(i, SerializationHelpers.SerializeInteger);
     }
 
+    public void WriteUnsignedInt(uint i) {
+        Write(i, SerializationHelpers.SerializeUnsignedInt);
+    }
+
     public void WriteInteger(bool b) {
         Write(b, SerializationHelpers.SerializeBool);
+    }
+
+    public void WriteByte(byte b) {
+        m_data_dynamic.Add(b);
+        dirty = true;
     }
 
     public byte[] GetBytes() {

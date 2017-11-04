@@ -13,49 +13,47 @@ public class PlayerState  {
     public const int maskOfHealthChange = 1 << 1;
     public const int maskOfPositionChange = 1;
 
-    public byte [] ConstructMessage(bool changedPosition, bool changedHealth) {
+    public ByteStreamWriter ConstructMessage(bool changedPosition, bool changedHealth) {
         byte[] header = new byte[5];
         Array.Copy(id.Serialize(), header, 4);
+        ByteStreamWriter stream = new ByteStreamWriter();
+        stream.WriteUnsignedInt(id);
 
         int changeMask = 0;
         if (changedHealth)
             changeMask = changeMask | maskOfHealthChange;
         if (changedPosition)
             changeMask = changeMask | maskOfPositionChange;
-        header[4] = (byte)changeMask;
 
-        byte[] result = header;
+        stream.WriteByte((byte)changeMask);
 
         if (changedHealth) {
-            result = result.Concat(health.Serialize()).ToArray();
+            stream.WriteInteger(health);
         }
         if (changedPosition) {
-            result = result.Concat(position.Serialize()).ToArray();
+            stream.WriteVector2(position);
         }
 
-        return result;
+        return stream;
     }
 
-    public bool ApplyMessage(byte[] bytes) {
-        uint thatID = bytes.DeserializeUnsignedInt();
+    public bool ApplyMessage(ByteStreamReader bytes) {
+        uint thatID = bytes.ReadUnsignedInt();
         if (id != thatID)
             return false;
 
-        int changeMask = bytes[4];
+        int changeMask = bytes.ReadByte();
 
         bool changedPosition = (changeMask & maskOfPositionChange) != 0,
             changedHealth = (changeMask & maskOfHealthChange) != 0;
 
-        int index = 5;
         if (changedHealth) {
-            health = bytes.DeserializeInteger(index);
+            health = bytes.ReadInt();
             Console.WriteLine("Applying health: " + health);
-            index += 4;
         }
         if (changedPosition) {
-            position = bytes.DeserializeVector2(index);
+            position = bytes.ReadVector2();
             Console.WriteLine("Applying position: " + position);
-            index += 8;
         }
 
         return true;
