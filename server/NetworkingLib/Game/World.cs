@@ -62,6 +62,11 @@ class PlayerPawn
 
         return true;
     }
+
+    public void AddPower( float power )
+    {
+        m_power += power;
+    }
 }
 
 class SimpleRay2D
@@ -98,14 +103,16 @@ class World
     {
         List< PlayerPawn > playersHit = CastRay( ray );
         float laserPower = owner.GetPower();
-
+        float powerAccumulator = 0.0f;
         for ( int i = 0; i < playersHit.Count; ++i )
         {
             if ( playersHit[i] == owner )
                 continue;
 
-            
+            powerAccumulator += playersHit[i].ReceiveDamage( laserPower );
         }
+
+        owner.AddPower( powerAccumulator );
     }
 
     List< PlayerPawn > CastRay( SimpleRay2D ray )
