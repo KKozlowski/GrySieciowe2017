@@ -22,11 +22,14 @@ namespace ServerApp {
                 ps1.id = 21;
                 ps1.health = 100;
 
-                ByteStreamWriter msg = ps1.ConstructMessage(true, true);
+                ByteStreamWriter msg = new ByteStreamWriter();
+                ps1.SetHealthDirty(true);
+                ps1.SetPositionDirty(true);
+                ps1.Serialize( msg );
 
                 PlayerState ps2 = new PlayerState();
                 ps2.id = 21;
-                ps2.ApplyMessage(new ByteStreamReader(msg));
+                ps2.Deserialize(new ByteStreamReader(msg));
 
                 Console.WriteLine("ps2 position: " + ps2.position);
                 Console.WriteLine("ps2 health: " + ps2.health);

@@ -3,6 +3,18 @@ using System.Collections.Generic;
 
 public class PlayerSession
 {
-    int m_playerId;
-    string m_ip;
+    Connection m_connection;
+
+    public Connection GetConnection()
+    {
+        return m_connection;
+    }
+}
+
+public class ServerData
+{
+}
+
+public class ClientData
+{
 }
