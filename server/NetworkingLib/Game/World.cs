@@ -126,8 +126,8 @@ public class SimpleRay2D
 
 public class World
 {
-    Dictionary< PlayerSession, PlayerPawn > m_players 
-        = new Dictionary<PlayerSession, PlayerPawn>();
+    Dictionary< int, PlayerPawn > m_players 
+        = new Dictionary<int, PlayerPawn>();
 
     public int respawnTime = 5;
 
@@ -145,45 +145,45 @@ public class World
         RespawnLoop();
     }
 
-    public PlayerPawn AddPlayer( PlayerSession session )
+    public PlayerPawn AddPlayer(int sessionId )
     {
         PlayerPawn pawn = CreatePawn();
-        m_players[session] = pawn;
+        m_players[sessionId] = pawn;
 
         return pawn;
     }
-    public void RemovePlayer( PlayerSession session ) {
-        m_players.Remove(session);
+    public void RemovePlayer(int sessionId ) {
+        m_players.Remove(sessionId);
     }
 
     private void OnPawnDeath( PlayerPawn pawn ) {
-        PlayerSession session = m_players.Where(x => x.Value == pawn).FirstOrDefault().Key;
+        int session = m_players.Where(x => x.Value == pawn).FirstOrDefault().Key;
         if (session != null) {
             Console.WriteLine("Some pawn Died");
             //Send death event
         }
     }
 
-    public bool IsPlayerAlive( PlayerSession session) {
+    public bool IsPlayerAlive(int sessionId) {
         PlayerPawn pawn = null;
-        m_players.TryGetValue(session, out pawn);
+        m_players.TryGetValue(sessionId, out pawn);
         return pawn != null && pawn.IsAlive;
     }
 
-    public bool IsPlayerInWorld(PlayerSession session) {
-        return m_players.ContainsKey(session);
+    public bool IsPlayerInWorld(int sessionId) {
+        return m_players.ContainsKey(sessionId);
     }
 
-    public void KillPlayer( PlayerSession session ) {
+    public void KillPlayer(int sessionId ) {
         PlayerPawn pawn = null;
-        m_players.TryGetValue(session, out pawn);
+        m_players.TryGetValue(sessionId, out pawn);
         if (pawn != null) {
             pawn.Die();
         }
     }
 
-    public void RespawnPlayer( PlayerSession session ) {
-        m_players[session].Respawn(Vector2.zero);
+    public void RespawnPlayer( int sessionId ) {
+        m_players[sessionId].Respawn(Vector2.zero);
     }
 
     public void RespawnLoop() {
