@@ -13,6 +13,11 @@ public abstract class EventBase
     public abstract void Deserialize( ByteStreamReader reader );
     public abstract void Serialize( ByteStreamWriter writer );
     public abstract byte GetId();
+
+    public EventType GetEventType()
+    {
+        return (EventType)GetId();
+    }
 }
 
 public class TestEvent : EventBase
