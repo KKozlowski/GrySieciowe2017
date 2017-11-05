@@ -77,7 +77,7 @@
       <Link>Networking\A\</Link>
     </Compile>
 	<Compile Include="..\..\client\Assets\Scripts\Networking\Events\InputEvent.cs">
-      <Link>Networking\A\</Link>
+      <Link>Networking\Events\A\</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>

@@ -6,7 +6,8 @@ using System.Reflection;
 public enum EventType : byte
 {
     HelloWorld = 1,
-    Input = 2
+    Input = 2,
+    SpawnRequest = 3
 }
 
 public abstract class EventBase
@@ -33,7 +34,7 @@ public class TestEvent : EventBase
 
     public override byte GetId()
     {
-        return (byte)EventType.HelloWorld;
+        return GetStaticId();
     }
 
     public static byte GetStaticId()

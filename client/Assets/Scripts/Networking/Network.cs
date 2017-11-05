@@ -12,9 +12,12 @@ public class Network
             m_server = server;
         }
 
-        public void Send( EventBase e, PlayerSession target )
+        public void Send( EventBase e, PlayerSession target, bool reliable = false )
         {
             ByteStreamWriter stream = new ByteStreamWriter();
+            stream.WriteByte( reliable ? ( byte )MsgFlags.ReliableEvent : ( byte )MsgFlags.UnreliableEvent );
+            stream.WriteByte( e.GetId() );
+
             e.Serialize( stream );
             target.GetConnection().Send( stream.GetBytes() );
         }
@@ -33,11 +36,11 @@ public class Network
         {
             ByteStreamWriter stream = new ByteStreamWriter();
             stream.WriteByte( reliable ? (byte)MsgFlags.ReliableEvent : (byte)MsgFlags.UnreliableEvent );
+            stream.WriteByte( e.GetId() );
             e.Serialize( stream );
             m_client.Send( stream.GetBytes() );
         }
     }
-
 
     static Network m_network;
 
@@ -59,13 +62,15 @@ public class Network
         m_network.m_isServer = isServer;
 
         m_network.m_dispatcher = new MessageDispatcher();
-        m_network.m_deserializer = new MessageDeserializer( m_network.m_dispatcher );
-
+        m_network.m_deserializer = new MessageDeserializer();
+        
         if ( isServer )
         {
             NetServer server = new NetServer();
-            server.Start( 1337 );
+            m_network.m_deserializer.Init( server, m_network.m_dispatcher );
+
             server.SetDeserializer( m_network.m_deserializer );
+            server.Start( 1337 );
 
             ServerManager manager = new ServerManager( server );
             m_network.m_server = manager;
@@ -73,11 +78,23 @@ public class Network
         else
         {
             NetClient client = new NetClient();
+            m_network.m_deserializer.Init( client, m_network.m_dispatcher );
+
             client.Connect( "127.0.0.1", 1337 );
             client.SetDeserializer( m_network.m_deserializer );
 
             ClientManager manager = new ClientManager( client );
             m_network.m_client = manager;
         }
+    }
+
+    public static void AddListener( IEventListener listener )
+    {
+        m_network.m_dispatcher.AddListener( listener );
+    }
+
+    public static void RemoveListener( IEventListener listener )
+    {
+        m_network.m_dispatcher.RemoveListener( listener );
     }
 }
