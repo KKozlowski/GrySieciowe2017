@@ -3,10 +3,49 @@ using System.Collections.Generic;
 
 public class Network
 {
+    public class ServerManager
+    {
+        NetServer m_server;
+
+        public ServerManager( NetServer server )
+        {
+            m_server = server;
+        }
+
+        public void Send( EventBase e, PlayerSession target )
+        {
+            ByteStreamWriter stream = new ByteStreamWriter();
+            e.Serialize( stream );
+            target.GetConnection().Send( stream.GetBytes() );
+        }
+    }
+
+    public class ClientManager
+    {
+        NetClient m_client;
+
+        public ClientManager( NetClient client )
+        {
+            m_client = client;
+        }
+
+        public void Send( EventBase e, bool reliable = false )
+        {
+            ByteStreamWriter stream = new ByteStreamWriter();
+            stream.WriteByte( reliable ? (byte)MsgFlags.ReliableEvent : (byte)MsgFlags.UnreliableEvent );
+            e.Serialize( stream );
+            m_client.Send( stream.GetBytes() );
+        }
+    }
+
+
     static Network m_network;
 
-    NetClient m_client;
-    NetServer m_server;
+    ServerManager m_server;
+    ClientManager m_client;
+
+    public static ServerManager Server { get { return m_network.m_server; } }
+    public static ClientManager Client { get { return m_network.m_client; } }
 
     bool m_isServer;
 
@@ -21,43 +60,17 @@ public class Network
         {
             NetServer server = new NetServer();
             server.Start( 1337 );
-            m_network.m_server = server;
+
+            ServerManager manager = new ServerManager( server );
+            m_network.m_server = manager;
         }
         else
         {
             NetClient client = new NetClient();
             client.Connect( "127.0.0.1", 1337 );
-            m_network.m_client = client;
+
+            ClientManager manager = new ClientManager( client );
+            m_network.m_client = manager;
         }
-    }
-
-    public static void Send( EventBase e, bool reliable, PlayerSession target )
-    {
-        System.Diagnostics.Debug.Assert( m_network == null );
-        System.Diagnostics.Debug.Assert( m_network.m_isServer );
-
-        m_network.InternalSendUnreliable( e, target );
-    }
-
-    public static void Send( EventBase e, bool reliable )
-    {
-        System.Diagnostics.Debug.Assert( m_network == null );
-        System.Diagnostics.Debug.Assert( !m_network.m_isServer );
-
-        m_network.InternalSendUnreliable( e );
-    }
-
-    private void InternalSendUnreliable( EventBase e, PlayerSession target )
-    {
-        ByteStreamWriter stream = new ByteStreamWriter();
-        e.Serialize( stream );
-        target.GetConnection().Send( stream.GetBytes() );
-    }
-
-    private void InternalSendUnreliable( EventBase e )
-    {
-        ByteStreamWriter stream = new ByteStreamWriter();
-        e.Serialize( stream );
-        //m_client.Send( stream.GetBytes() );
     }
 }

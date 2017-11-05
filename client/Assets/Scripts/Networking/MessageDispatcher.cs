@@ -5,6 +5,5 @@ class MessageDispatcher
 {
     public void PushEvent( EventBase evnt )
     {
-
     }
 }

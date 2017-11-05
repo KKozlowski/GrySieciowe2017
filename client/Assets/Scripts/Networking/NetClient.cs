@@ -69,6 +69,11 @@ public class NetClient : IHanshakable
         deserializer = md;
     }
 
+    public void Send( byte[] data )
+    {
+        m_sender.Send( data );
+    }
+
     public void HandshakeStepOne(int receivePort) {
         ByteStreamWriter writer = new ByteStreamWriter();
         writer.WriteByte((byte)MsgFlags.ConnectionRequest);

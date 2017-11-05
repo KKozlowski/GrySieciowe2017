@@ -21,7 +21,7 @@ public class MessageDeserializer
     public const int c_maxPacketSize = 512;
 
     EventsFactory m_events;
-    MessageDispatcher m_dispatcher;
+    MessageDispatcher m_dispatcher = new MessageDispatcher();
 
     public IHanshakable connectionMessagesReceiver;
 
