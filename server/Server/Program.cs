@@ -8,14 +8,25 @@ using UnityEngine;
 
 namespace ServerApp {
     class Program {
-        static void Main(string[] args) {
-            NetServer srv = new NetServer();
-            MessageDispatcher dispatcher = new MessageDispatcher();
-            MessageDeserializer deserializer = new MessageDeserializer( dispatcher );
-            srv.SetDeserializer(deserializer);
-            deserializer.connectionMessagesReceiver = srv;
+        public class TestInputLstener : IEventListener
+        {
+            public bool Execute( EventBase e )
+            {
+                InputEvent input = (InputEvent)e;
+                Console.WriteLine( "Dupa: " + input.m_direction.ToString() );
+                return true;
+            }
 
-            srv.Start( 1111 );
+            public EventType GetEventType()
+            {
+                return (EventType)InputEvent.GetStaticId();
+            }
+        }
+
+        static void Main(string[] args)
+        {
+            Network.Init( true );
+            Network.AddListener( new TestInputLstener() );
 
             {
                 PlayerState ps1 = new PlayerState();

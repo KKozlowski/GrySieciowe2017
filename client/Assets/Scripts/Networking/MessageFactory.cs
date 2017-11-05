@@ -17,12 +17,17 @@ public class MessageDeserializer
     EventsFactory m_events;
     MessageDispatcher m_dispatcher;
 
-    public IHanshakable connectionMessagesReceiver;
+    IHanshakable m_connectionMessagesReceiver;
 
-    public MessageDeserializer( MessageDispatcher dispatcher )
+    public MessageDeserializer()
+    {
+        m_events = new EventsFactory();
+    }
+
+    public void Init( IHanshakable handshake, MessageDispatcher dispatcher )
     {
         m_dispatcher = dispatcher;
-        m_events = new EventsFactory();
+        m_connectionMessagesReceiver = handshake;
     }
 
     public bool HandleData( byte[] data, IPEndPoint endpoint = null )
@@ -36,7 +41,7 @@ public class MessageDeserializer
         {
             return true;
         }
-        if (HandleConnectionMsg(m_stream, flags, endpoint)) 
+        if ( HandleConnectionMsg( m_stream, flags, endpoint ) )
         {
             return true;
         }
@@ -62,11 +67,12 @@ public class MessageDeserializer
         return false;
     }
 
-    bool HandleConnectionMsg(ByteStreamReader stream, byte flags, IPEndPoint endpoint) {
-        if (HasFlag(flags, (byte)MsgFlags.ConnectionRequest)) {
+    bool HandleConnectionMsg( ByteStreamReader stream, byte flags, IPEndPoint endpoint )
+    {
+        if ( HasFlag( flags, ( byte )MsgFlags.ConnectionRequest ) )
+        {
             byte content = stream.ReadByte();
-            if (connectionMessagesReceiver != null)
-                connectionMessagesReceiver.HandleConnectionData((HandshakeMessage)content, stream, endpoint);
+            m_connectionMessagesReceiver.HandleConnectionData( ( HandshakeMessage )content, stream, endpoint );
             return true;
         }
 

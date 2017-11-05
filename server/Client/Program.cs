@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading;
+using UnityEngine;
 
 namespace ClientApp
 {
@@ -11,15 +7,13 @@ namespace ClientApp
     {
         static void Main( string[] args )
         {
-            NetClient client = new NetClient();
-            MessageDispatcher dispatcher = new MessageDispatcher();
-            MessageDeserializer deserializer = new MessageDeserializer( dispatcher );
-            client.SetDeserializer(deserializer);
-            deserializer.connectionMessagesReceiver = client;
+            Network.Init( false );
 
-            client.Connect( "127.0.0.1", 1111 );
-            Console.WriteLine("DD");
-            
+            Thread.Sleep( 1000 );
+            InputEvent e = new InputEvent();
+            e.m_direction = new Vector2( 1.2f, 3.4f );
+            Network.Client.Send( e );
+
             while ( true )
             {
                 Thread.Sleep( 50 );
