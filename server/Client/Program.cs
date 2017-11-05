@@ -11,6 +11,7 @@ namespace ClientApp
 
             Thread.Sleep( 1000 );
             InputEvent e = new InputEvent();
+            e.m_sessionId = 0;
             e.m_direction = new Vector2( 1.2f, 3.4f );
             Network.Client.Send( e );
 

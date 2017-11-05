@@ -7,9 +7,13 @@ public class Network
     {
         NetServer m_server;
 
+        public World World { get; private set; }
+
         public ServerManager( NetServer server )
         {
             m_server = server;
+            World = new World();
+            World.Init();
         }
 
         public void Send( EventBase e, PlayerSession target, bool reliable = false )

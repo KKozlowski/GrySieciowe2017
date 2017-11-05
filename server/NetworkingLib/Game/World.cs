@@ -27,7 +27,8 @@ public class PlayerPawn
     }
 
     public void Move(Vector2 direction) {
-        m_movementDirection = direction;
+        m_movementDirection = direction.normalized;
+        //Console.WriteLine("New direction: " + m_movementDirection.ToString());
     }
 
     public void ShootAtDirection(Vector2 direction) {
@@ -126,14 +127,46 @@ public class SimpleRay2D
 
 public class World
 {
+    public class ProperInputListener : IEventListener {
+        World m_world = null;
+        public ProperInputListener(World w) {
+            m_world = w;
+        }
+
+        public bool Execute(EventBase e) {
+            InputEvent input = (InputEvent)e;
+
+            PlayerPawn pawn = m_world.TryGetPawn(input.m_sessionId);
+            //Console.WriteLine("Looking for pawn with id " + input.m_sessionId + ": " + pawn);
+            if (pawn != null) {
+                pawn.Move(input.m_direction);
+            }
+
+            return false;
+        }
+
+        public EventType GetEventType() {
+            return (EventType)InputEvent.GetStaticId();
+        }
+    }
+
     Dictionary< int, PlayerPawn > m_players 
         = new Dictionary<int, PlayerPawn>();
 
     public int respawnTime = 5;
 
+    ProperInputListener m_inputListener = null;// new ProperInputListener();
+
     public void Init()
     {
+        m_inputListener = new ProperInputListener(this);
+        Network.AddListener(m_inputListener);
+    }
 
+    private PlayerPawn TryGetPawn(int id) {
+        PlayerPawn pawn = null;
+        m_players.TryGetValue(id, out pawn);
+        return pawn;
     }
 
     public void Update(float dt) {
@@ -149,7 +182,7 @@ public class World
     {
         PlayerPawn pawn = CreatePawn();
         m_players[sessionId] = pawn;
-
+        Console.WriteLine("Player pawn added with id: " + sessionId);
         return pawn;
     }
     public void RemovePlayer(int sessionId ) {

@@ -14,7 +14,7 @@ namespace ServerApp {
             {
                 InputEvent input = (InputEvent)e;
                 Console.WriteLine( "Dupa: " + input.m_direction.ToString() );
-                return true;
+                return false;
             }
 
             public EventType GetEventType()

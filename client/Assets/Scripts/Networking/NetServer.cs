@@ -83,6 +83,7 @@ public class NetServer : IHanshakable {
             if (chosen != null) {
                 m_pending.Remove(chosen);
                 m_entities.Add(new ConnectionEntity(chosen));
+                Network.Server.World.AddPlayer(chosen.m_connectionId);
             }
         }
     }
