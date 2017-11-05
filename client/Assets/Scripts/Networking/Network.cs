@@ -38,7 +38,6 @@ public class Network
         }
     }
 
-
     static Network m_network;
 
     MessageDeserializer m_deserializer;
@@ -79,5 +78,15 @@ public class Network
             ClientManager manager = new ClientManager( client );
             m_network.m_client = manager;
         }
+    }
+
+    public static void AddListener( IEventListener listener )
+    {
+        m_network.m_dispatcher.AddListener( listener );
+    }
+
+    public static void RemoveListener( IEventListener listener )
+    {
+        m_network.m_dispatcher.RemoveListener( listener );
     }
 }

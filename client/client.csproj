@@ -13,13 +13,11 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile>
-    </CompilerResponseFile>
+    <CompilerResponseFile></CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows64:19</UnityBuildTarget>
     <UnityVersion>2017.1.1f1</UnityVersion>
-    <RootNamespace>
-    </RootNamespace>
+    <RootNamespace></RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -87,9 +85,10 @@
     <Compile Include="Assets\Scripts\Networking\Connection.cs" />
     <Compile Include="Assets\Scripts\Networking\Debugging.cs" />
     <Compile Include="Assets\Scripts\Networking\Events.cs" />
+    <Compile Include="Assets\Scripts\Networking\Events\InputEvent.cs" />
+    <Compile Include="Assets\Scripts\Networking\Events\SpawnEvent.cs" />
     <Compile Include="Assets\Scripts\Networking\FastMap.cs" />
     <Compile Include="Assets\Scripts\Networking\IdAllocator.cs" />
-    <Compile Include="Assets\Scripts\Networking\InputEvent.cs" />
     <Compile Include="Assets\Scripts\Networking\Listener.cs" />
     <Compile Include="Assets\Scripts\Networking\MessageDispatcher.cs" />
     <Compile Include="Assets\Scripts\Networking\MessageFactory.cs" />
@@ -100,9 +99,6 @@
     <Compile Include="Assets\Scripts\Networking\PlayerState.cs" />
     <Compile Include="Assets\Scripts\Networking\SerializationHelpers.cs" />
     <Compile Include="Assets\Scripts\PlayerConnection.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Assets\Scripts\Networking\Events\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />
