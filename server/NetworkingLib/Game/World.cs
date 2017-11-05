@@ -1,15 +1,41 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
-class PlayerPawn
+public class PlayerPawn
 {
     Vector2 m_position;
     float m_radius;
     float m_power;
+    float m_movementSpeed = 1;
+    float m_laserLength = 5;
+
+    Vector2 m_movementDirection = Vector2.zero;
+
+    public bool isPlayingNow = true;
+    public DateTime lastDeathTime;
+
+    World world;
+    
+    public bool IsAlive { get; private set; }
+    public event Action<PlayerPawn> OnDeath;
 
     public void Update( float dt )
     {
+        m_position += m_movementDirection * dt * m_movementSpeed;
+    }
+
+    public void Move(Vector2 direction) {
+        m_movementDirection = direction;
+    }
+
+    public void ShootAtDirection(Vector2 direction) {
+        SimpleRay2D ray = new SimpleRay2D();
+        ray.origin = m_position;
+        ray.direction = direction;
+        ray.length = m_laserLength;
+        world.ShootLaser(ray, this);
     }
 
     public float ReceiveDamage( float dmg )
@@ -20,15 +46,31 @@ class PlayerPawn
         {
             // death
             powerIncome = m_power;
+            Die();
         }
         else
         {
-            m_power -= dmg;
+            AddPower(-dmg);
+            powerIncome = dmg;
         }
 
         powerIncome *= Mathf.Exp( -dmg / 15 );
 
         return powerIncome;
+    }
+
+    public void Die() {
+        m_power = 0;
+        IsAlive = false;
+        lastDeathTime = DateTime.Now;
+
+        if (OnDeath != null)
+            OnDeath(this);
+    }
+
+    public void Respawn(Vector2 position) {
+        IsAlive = true;
+        m_position = position;
     }
 
     public float GetPower() { return m_power; }
@@ -67,39 +109,99 @@ class PlayerPawn
     {
         m_power += power;
     }
+
+    public PlayerPawn(World w, Vector2 position) {
+        world = w;
+        m_position = position;
+        lastDeathTime = new DateTime();
+    }
 }
 
-class SimpleRay2D
+public class SimpleRay2D
 {
     public Vector2 origin;
     public Vector2 direction;
     public float length;
 }
 
-class World
+public class World
 {
-    List< PlayerPawn > m_players = new List<PlayerPawn>();
+    Dictionary< PlayerSession, PlayerPawn > m_players 
+        = new Dictionary<PlayerSession, PlayerPawn>();
+
+    public int respawnTime = 5;
 
     public void Init()
     {
+
     }
 
-    public void Update( float dt )
-    {
-        for ( int i = 0; i < m_players.Count; ++i )
-        {
-            m_players[i].Update( dt );
+    public void Update(float dt) {
+        foreach (var kvp in m_players) {
+            if (kvp.Value.IsAlive)
+                kvp.Value.Update(dt);
         }
+
+        RespawnLoop();
     }
 
-    public PlayerPawn CreatePlayer( PlayerSession session )
+    public PlayerPawn AddPlayer( PlayerSession session )
     {
-        PlayerPawn pawn = new PlayerPawn();
+        PlayerPawn pawn = CreatePawn();
+        m_players[session] = pawn;
 
         return pawn;
     }
+    public void RemovePlayer( PlayerSession session ) {
+        m_players.Remove(session);
+    }
 
-    void ShootLaser( SimpleRay2D ray, PlayerPawn owner )
+    private void OnPawnDeath( PlayerPawn pawn ) {
+        PlayerSession session = m_players.Where(x => x.Value == pawn).FirstOrDefault().Key;
+        if (session != null) {
+            Console.WriteLine("Some pawn Died");
+            //Send death event
+        }
+    }
+
+    public bool IsPlayerAlive( PlayerSession session) {
+        PlayerPawn pawn = null;
+        m_players.TryGetValue(session, out pawn);
+        return pawn != null && pawn.IsAlive;
+    }
+
+    public bool IsPlayerInWorld(PlayerSession session) {
+        return m_players.ContainsKey(session);
+    }
+
+    public void KillPlayer( PlayerSession session ) {
+        PlayerPawn pawn = null;
+        m_players.TryGetValue(session, out pawn);
+        if (pawn != null) {
+            pawn.Die();
+        }
+    }
+
+    public void RespawnPlayer( PlayerSession session ) {
+        m_players[session].Respawn(Vector2.zero);
+    }
+
+    public void RespawnLoop() {
+        foreach (var kvp in m_players.Where(x=>x.Value == null)) {
+            if (kvp.Value.isPlayingNow 
+                && (DateTime.Now - kvp.Value.lastDeathTime).Seconds >= respawnTime) {
+                RespawnPlayer(kvp.Key);
+            }
+        }
+    }
+
+    private PlayerPawn CreatePawn() {
+        PlayerPawn pawn = new PlayerPawn(this, Vector2.zero);
+        pawn.OnDeath += OnPawnDeath;
+        return pawn;
+    }
+
+    public void ShootLaser( SimpleRay2D ray, PlayerPawn owner )
     {
         List< PlayerPawn > playersHit = CastRay( ray );
         float laserPower = owner.GetPower();
@@ -118,11 +220,11 @@ class World
     List< PlayerPawn > CastRay( SimpleRay2D ray )
     {
         List< PlayerPawn > result = new List<PlayerPawn>();
-        for ( int i = 0; i < m_players.Count; ++i )
-        {
-            if ( m_players[ i ].Intersects( ray ) )
-            {
-                result.Add( m_players[i] );
+        foreach(var kvp in m_players) {
+            if (kvp.Value != null) {
+                if (kvp.Value.Intersects(ray)) {
+                    result.Add(kvp.Value);
+                }
             }
         }
 
