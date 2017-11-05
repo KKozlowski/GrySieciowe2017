@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Net;
+﻿using System.Net;
 
 public enum MsgFlags : byte
 {
@@ -21,12 +15,13 @@ public class MessageDeserializer
     public const int c_maxPacketSize = 512;
 
     EventsFactory m_events;
-    MessageDispatcher m_dispatcher = new MessageDispatcher();
+    MessageDispatcher m_dispatcher;
 
     public IHanshakable connectionMessagesReceiver;
 
-    public MessageDeserializer()
+    public MessageDeserializer( MessageDispatcher dispatcher )
     {
+        m_dispatcher = dispatcher;
         m_events = new EventsFactory();
     }
 

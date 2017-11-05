@@ -12,7 +12,8 @@ namespace ClientApp
         static void Main( string[] args )
         {
             NetClient client = new NetClient();
-            MessageDeserializer deserializer = new MessageDeserializer();
+            MessageDispatcher dispatcher = new MessageDispatcher();
+            MessageDeserializer deserializer = new MessageDeserializer( dispatcher );
             client.SetDeserializer(deserializer);
             deserializer.connectionMessagesReceiver = client;
 
