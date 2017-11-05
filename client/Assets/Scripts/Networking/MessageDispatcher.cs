@@ -7,7 +7,7 @@ public interface IEventListener
     bool Execute( EventBase e );
 }
 
-class MessageDispatcher
+public class MessageDispatcher
 {
     List< IEventListener > m_listeners = new List<IEventListener>();
 

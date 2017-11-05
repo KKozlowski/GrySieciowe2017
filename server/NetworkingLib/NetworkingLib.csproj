@@ -76,6 +76,9 @@
     <Compile Include="..\..\client\Assets\Scripts\Networking\MessageDispatcher.cs">
       <Link>Networking\A\</Link>
     </Compile>
+	<Compile Include="..\..\client\Assets\Scripts\Networking\Events\InputEvent.cs">
+      <Link>Networking\A\</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

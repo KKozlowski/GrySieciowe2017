@@ -10,7 +10,8 @@ namespace ServerApp {
     class Program {
         static void Main(string[] args) {
             NetServer srv = new NetServer();
-            MessageDeserializer deserializer = new MessageDeserializer();
+            MessageDispatcher dispatcher = new MessageDispatcher();
+            MessageDeserializer deserializer = new MessageDeserializer( dispatcher );
             srv.SetDeserializer(deserializer);
             deserializer.connectionMessagesReceiver = srv;
 
