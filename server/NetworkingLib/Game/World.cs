@@ -28,7 +28,7 @@ public class PlayerPawn
 
     public void Move(Vector2 direction) {
         m_movementDirection = direction.normalized;
-        //Console.WriteLine("New direction: " + m_movementDirection.ToString());
+        Console.WriteLine("New direction: " + m_movementDirection.ToString());
     }
 
     public void ShootAtDirection(Vector2 direction) {
@@ -140,9 +140,11 @@ public class World
             //Console.WriteLine("Looking for pawn with id " + input.m_sessionId + ": " + pawn);
             if (pawn != null) {
                 pawn.Move(input.m_direction);
+            } else {
+                Console.WriteLine("InputEvent: Target pawn doesn't exist");
             }
 
-            return false;
+            return true;
         }
 
         public EventType GetEventType() {
