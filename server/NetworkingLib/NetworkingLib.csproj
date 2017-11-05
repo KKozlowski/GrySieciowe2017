@@ -79,6 +79,9 @@
 	<Compile Include="..\..\client\Assets\Scripts\Networking\Events\InputEvent.cs">
       <Link>Networking\Events\A\</Link>
     </Compile>
+	<Compile Include="..\..\client\Assets\Scripts\Networking\Events\SpawnEvent.cs">
+      <Link>Networking\Events\A\</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
