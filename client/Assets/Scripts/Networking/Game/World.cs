@@ -286,7 +286,7 @@ public class World
         PlayerStateEvent e = new PlayerStateEvent();
         e.state = ps;
         Network.Server.Send(e, playerConnectionId);
-        Network.Log("Sending state of " + ps.id + " (pos: " + ps.position.ToString() + ") to " + playerConnectionId);
+        Network.Log("Sending state of " + ps.id + " (pos: " + e.state.position.ToString() + ") to " + playerConnectionId);
     }
 
     public bool IsPlayerAlive(int sessionId) {
