@@ -46,6 +46,9 @@
     <Compile Include="..\..\client\Assets\Scripts\Networking\FastMap.cs">
       <Link>Networking\A\</Link>
     </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\Game\World.cs">
+      <Link>Networking\Game\World.cs</Link>
+    </Compile>
     <Compile Include="..\..\client\Assets\Scripts\Networking\IdAllocator.cs">
       <Link>Networking\A\</Link>
     </Compile>
@@ -76,10 +79,10 @@
     <Compile Include="..\..\client\Assets\Scripts\Networking\MessageDispatcher.cs">
       <Link>Networking\A\</Link>
     </Compile>
-	<Compile Include="..\..\client\Assets\Scripts\Networking\Events\InputEvent.cs">
+    <Compile Include="..\..\client\Assets\Scripts\Networking\Events\InputEvent.cs">
       <Link>Networking\Events\A\</Link>
     </Compile>
-	<Compile Include="..\..\client\Assets\Scripts\Networking\Events\SpawnEvent.cs">
+    <Compile Include="..\..\client\Assets\Scripts\Networking\Events\SpawnEvent.cs">
       <Link>Networking\Events\A\</Link>
     </Compile>
   </ItemGroup>
@@ -97,8 +100,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Game\World.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

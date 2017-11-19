@@ -38,17 +38,17 @@ public class NetClient : IHanshakable
         ConnectionId = -1;
     }
 
-    public void Connect( string ip, int receivePort )
+    public void Connect( string ip, int listenPort, int receivePort )
     {
         m_listener = new Listener();
-        m_listener.Init( receivePort );
+        m_listener.Init(listenPort);
 
         m_sender = new Connection();
         m_sender.Connect( ip, receivePort + 1 );
 
         m_listener.SetDataCallback(OnData);
 
-        HandshakeStepOne(receivePort);
+        HandshakeStepOne(listenPort);
     }
 
     public void Shutdown()

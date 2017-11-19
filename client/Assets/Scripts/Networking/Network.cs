@@ -60,36 +60,48 @@ public class Network
 
     public static void Init( bool isServer )
     {
-        System.Diagnostics.Debug.Assert( m_network == null );
+        if ( isServer )
+        {
+            InitAsServer(1337);
+        }
+        else
+        {
+            InitAsClient("127.0.0.1", 2137, 1337);
+        }
+    }
+
+    private static void InitBasic(bool isServer) {
+        System.Diagnostics.Debug.Assert(m_network == null);
 
         m_network = new Network();
         m_network.m_isServer = isServer;
 
         m_network.m_dispatcher = new MessageDispatcher();
         m_network.m_deserializer = new MessageDeserializer();
-        
-        if ( isServer )
-        {
-            NetServer server = new NetServer();
-            m_network.m_deserializer.Init( server, m_network.m_dispatcher );
+    }
 
-            server.SetDeserializer( m_network.m_deserializer );
-            server.Start( 1337 );
+    public static void InitAsServer(int port) {
+        InitBasic(true);
+        NetServer server = new NetServer();
+        m_network.m_deserializer.Init(server, m_network.m_dispatcher);
 
-            ServerManager manager = new ServerManager( server );
-            m_network.m_server = manager;
-        }
-        else
-        {
-            NetClient client = new NetClient();
-            m_network.m_deserializer.Init( client, m_network.m_dispatcher );
+        server.SetDeserializer(m_network.m_deserializer);
+        server.Start(port);
 
-            client.Connect( "127.0.0.1", 1337 );
-            client.SetDeserializer( m_network.m_deserializer );
+        ServerManager manager = new ServerManager(server);
+        m_network.m_server = manager;
+    }
 
-            ClientManager manager = new ClientManager( client );
-            m_network.m_client = manager;
-        }
+    public static void InitAsClient(string serverIp, int listenPort, int receivePort) {
+        InitBasic(false);
+        NetClient client = new NetClient();
+        m_network.m_deserializer.Init(client, m_network.m_dispatcher);
+
+        client.Connect(serverIp, listenPort, receivePort);
+        client.SetDeserializer(m_network.m_deserializer);
+
+        ClientManager manager = new ClientManager(client);
+        m_network.m_client = manager;
     }
 
     public static void AddListener( IEventListener listener )
