@@ -10,16 +10,15 @@ public class PlayersManager : MonoBehaviour {
         }
 
         public bool Execute(EventBase e) {
-            Debug.Log("STATES");
             PlayerStateEvent ps = (PlayerStateEvent)e;
 
-            m_manager.ApplyState(ps.state);
+            m_manager.EnqueueState(ps.state);
 
             return true;
         }
 
         public EventType GetEventType() {
-            return (EventType)InputEvent.GetStaticId();
+            return (EventType)PlayerStateEvent.GetStaticId();
         }
     }
 
@@ -40,18 +39,31 @@ public class PlayersManager : MonoBehaviour {
         public CharacterController controller;
     }
 
-    private Dictionary<int, PlayerInstanceState> states 
+    private Dictionary<int, PlayerInstanceState> playerInstances 
         = new Dictionary<int, PlayerInstanceState>();
 
+    private Queue<PlayerState> statesToApply = new Queue<PlayerState>();
+
+    public void EnqueueState(PlayerState ps) {
+        Debug.Log("Apply state for " + ps.id);
+
+        statesToApply.Enqueue(ps);
+    }
+
+    void Update() {
+        while(statesToApply.Count > 0) {
+            ApplyState(statesToApply.Dequeue());
+        }
+    }
+
     public void ApplyState(PlayerState ps) {
-        Debug.Log("Apply state");
         PlayerInstanceState pis = null;
-        if (!states.TryGetValue(ps.id, out pis)) {
+        if (!playerInstances.TryGetValue(ps.id, out pis)) {
             pis = new PlayerInstanceState();
             pis.state = ps;
             pis.controller = Instantiate(characterPrefab);
             pis.controller.Init(ps.id == Network.Client.ConnectionId);
-            states[ps.id] = pis;
+            playerInstances[ps.id] = pis;
         }
 
         pis.controller.MoveTo(pis.state.position);

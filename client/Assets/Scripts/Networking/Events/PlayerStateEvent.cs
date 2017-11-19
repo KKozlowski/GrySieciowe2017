@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PlayerStateEvent : EventBase {
 
-    public PlayerState state;
+    public PlayerState state = new PlayerState();
 
     public override void Deserialize(ByteStreamReader reader) {
         state.Deserialize(reader);
@@ -16,8 +16,8 @@ public class PlayerStateEvent : EventBase {
     }
 
     public override byte GetId() {
-        return InputEvent.GetStaticId();
-        //return PlayerStateEvent.GetStaticId();
+        //return InputEvent.GetStaticId();
+        return PlayerStateEvent.GetStaticId();
     }
 
     public static byte GetStaticId() {
