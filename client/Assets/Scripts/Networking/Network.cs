@@ -46,6 +46,10 @@ public class Network
             e.Serialize( stream );
             m_client.Send( stream.GetBytes() );
         }
+
+        public void Shutdown() {
+            m_client.Shutdown();
+        }
     }
 
     static Network m_network;
@@ -99,12 +103,12 @@ public class Network
         m_network.m_server = manager;
     }
 
-    public static void InitAsClient(string serverIp, int listenPort, int receivePort, UnityEngine.MonoBehaviour coroutineHolder = null) {
+    public static void InitAsClient(string serverIp, int listenPort, int receivePort) {
         InitBasic(false);
         NetClient client = new NetClient();
         m_network.m_deserializer.Init(client, m_network.m_dispatcher);
 
-        client.Connect(serverIp, listenPort, receivePort, coroutineHolder);
+        client.Connect(serverIp, listenPort, receivePort);
         client.SetDeserializer(m_network.m_deserializer);
 
         ClientManager manager = new ClientManager(client);

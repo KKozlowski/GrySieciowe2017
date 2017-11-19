@@ -36,7 +36,6 @@ public class MessageDeserializer
         m_stream = new ByteStreamReader( data );
 
         byte flags = m_stream.ReadByte();
-
         if ( HandleEvent( m_stream, flags ) )
         {
             return true;
@@ -55,6 +54,7 @@ public class MessageDeserializer
         {
             byte eventType = stream.ReadByte();
             EventBase evnt = m_events.CreateEvent( eventType );
+            //Network.Log("Event type: " + evnt.GetEventType());
             evnt.Deserialize( stream );
             m_dispatcher.PushEvent( evnt );
             return true;

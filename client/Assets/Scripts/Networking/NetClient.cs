@@ -38,7 +38,7 @@ public class NetClient : IHanshakable
         ConnectionId = -1;
     }
 
-    public void Connect( string ip, int listenPort, int receivePort, UnityEngine.MonoBehaviour coroutineHolder = null)
+    public void Connect( string ip, int listenPort, int receivePort)
     {
         m_listener = new Listener();
         m_listener.Init(listenPort, false);
@@ -61,7 +61,7 @@ public class NetClient : IHanshakable
     }
 
     void OnData(byte[] data, IPEndPoint endpoint) {
-        Console.WriteLine("Data received");
+        //Network.Log("Data received");
         deserializer.HandleData(data, endpoint);
     }
 

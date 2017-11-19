@@ -2,24 +2,30 @@
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading;
 
 public class PlayerPawn
 {
     Vector2 m_position;
     float m_radius;
-    float m_power;
+    float m_power = 1;
     float m_movementSpeed = 1;
     float m_laserLength = 5;
 
     Vector2 m_movementDirection = Vector2.zero;
 
-    public bool isPlayingNow = true;
-    public DateTime lastDeathTime;
+    public bool m_isPlayingNow = false;
+    public DateTime m_lastDeathTime;
 
     World world;
     
     public bool IsAlive { get; private set; }
     public event Action<PlayerPawn> OnDeath;
+
+    public float Power { get { return m_power; } }
+    public Vector2 Position { get { return m_position; } }
+
+    public int Id { get; private set; }
 
     public void Update( float dt )
     {
@@ -63,7 +69,7 @@ public class PlayerPawn
     public void Die() {
         m_power = 0;
         IsAlive = false;
-        lastDeathTime = DateTime.Now;
+        m_lastDeathTime = DateTime.Now;
 
         if (OnDeath != null)
             OnDeath(this);
@@ -72,6 +78,7 @@ public class PlayerPawn
     public void Respawn(Vector2 position) {
         IsAlive = true;
         m_position = position;
+        m_power = 1;
     }
 
     public float GetPower() { return m_power; }
@@ -111,10 +118,11 @@ public class PlayerPawn
         m_power += power;
     }
 
-    public PlayerPawn(World w, Vector2 position) {
+    public PlayerPawn(World w, Vector2 position, int id) {
         world = w;
         m_position = position;
-        lastDeathTime = new DateTime();
+        m_lastDeathTime = new DateTime();
+        Id = id;
     }
 }
 
@@ -163,8 +171,8 @@ public class World
 
             PlayerPawn pawn = m_world.TryGetPawn(input.m_sessionId);
             //Console.WriteLine("Looking for pawn with id " + input.m_sessionId + ": " + pawn);
-            if (pawn!= null && !pawn.isPlayingNow) {
-                pawn.isPlayingNow = true;
+            if (pawn!= null && !pawn.m_isPlayingNow) {
+                pawn.m_isPlayingNow = true;
                 m_world.RespawnPlayer(input.m_sessionId);
             }
 
@@ -184,12 +192,52 @@ public class World
     ProperInputListener m_inputListener = null;// new ProperInputListener();
     ProperPleaseSpawnListener m_spawnListener = null;
 
+    System.Random m_radom = new System.Random();
+
+    Thread updateThread;
+
     public void Init()
     {
         m_inputListener = new ProperInputListener(this);
         m_spawnListener = new ProperPleaseSpawnListener(this);
         Network.AddListener(m_inputListener);
         Network.AddListener(m_spawnListener);
+
+        updateThread = new Thread(UpdateLoop);
+        updateThread.Start();
+    }
+
+    ~World() {
+        if (updateThread != null) {
+            updateThread.Interrupt();
+            Network.Log("Update loop broken");
+        }
+            
+    }
+
+    void UpdateLoop() {
+        DateTime lastTime = DateTime.Now;
+        while (true) {
+            Thread.Sleep(16);
+            DateTime thisTime = DateTime.Now;
+            float dt = (thisTime - lastTime).Milliseconds * 0.001f;
+            lastTime = thisTime;
+            foreach (var kvp in m_players) {
+                kvp.Value.Update(dt);
+            }
+            //Network.Log("UPDATE TICK");
+            try {
+                foreach (var kvp in m_players) {
+                    foreach (int id in m_players.Keys) {
+                        SendPawnStateToPlayer(id, kvp.Value);
+                        //Network.Log("SENDING STATE");
+                    }
+                }
+            } catch (InvalidOperationException) {
+                Network.Log("Concurrency problem.");
+            }
+            
+        }
     }
 
     private PlayerPawn TryGetPawn(int id) {
@@ -209,7 +257,7 @@ public class World
 
     public PlayerPawn AddPlayer(int sessionId )
     {
-        PlayerPawn pawn = CreatePawn();
+        PlayerPawn pawn = CreatePawn(sessionId);
         m_players[sessionId] = pawn;
         Console.WriteLine("Player pawn added with id: " + sessionId);
         return pawn;
@@ -225,6 +273,19 @@ public class World
             Console.WriteLine("Some pawn Died");
             //Send death event
         }
+    }
+
+    public void SendPawnStateToPlayer(int playerConnectionId, PlayerPawn pawn) {
+        PlayerState ps = new PlayerState();
+        ps.id = pawn.Id;
+        ps.power = pawn.Power;
+        ps.SetHealthDirty(true);
+        ps.position = pawn.Position;
+        ps.SetPositionDirty(true);
+
+        PlayerStateEvent e = new PlayerStateEvent();
+        e.state = ps;
+        Network.Server.Send(e, playerConnectionId);
     }
 
     public bool IsPlayerAlive(int sessionId) {
@@ -245,14 +306,22 @@ public class World
         }
     }
 
+    private Vector2 GetRandomPoint(double rMax) {
+
+            var r = Math.Sqrt((double)m_radom.Next() / int.MaxValue) * rMax;
+            var theta = (double)m_radom.Next() / int.MaxValue * 2 * Math.PI;
+            return new Vector2((float)(r * Math.Cos(theta)), (float)(r * Math.Sin(theta)));
+    }
+
     public void RespawnPlayer( int sessionId ) {
         PlayerPawn pawn = null;
         m_players.TryGetValue(sessionId, out pawn);
         if (pawn != null) {
-            Vector2 position = Vector2.zero;
+            Vector2 position = GetRandomPoint(5);
             pawn.Respawn(position);
 
             var spawnEvent = new SpawnRequestEvent(sessionId, true);
+            spawnEvent.m_startPosition = position;
             Network.Log("Pawn " + sessionId + " respawned at " + position);
             Network.Server.Send(spawnEvent, sessionId);
         }
@@ -260,15 +329,15 @@ public class World
 
     public void RespawnLoop() {
         foreach (var kvp in m_players.Where(x=>x.Value == null)) {
-            if (kvp.Value.isPlayingNow 
-                && (DateTime.Now - kvp.Value.lastDeathTime).Seconds >= respawnTime) {
+            if (kvp.Value.m_isPlayingNow 
+                && (DateTime.Now - kvp.Value.m_lastDeathTime).Seconds >= respawnTime) {
                 RespawnPlayer(kvp.Key);
             }
         }
     }
 
-    private PlayerPawn CreatePawn() {
-        PlayerPawn pawn = new PlayerPawn(this, Vector2.zero);
+    private PlayerPawn CreatePawn(int connectionId) {
+        PlayerPawn pawn = new PlayerPawn(this, Vector2.zero, connectionId);
         pawn.OnDeath += OnPawnDeath;
         return pawn;
     }

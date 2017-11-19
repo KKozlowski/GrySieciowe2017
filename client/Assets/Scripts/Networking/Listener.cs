@@ -41,15 +41,6 @@ public class Listener
         
     }
 
-    public void Init(int port, MonoBehaviour go) {
-        BasicInit(port);
-
-        Network.Log("CO");
-        go.StartCoroutine(ReceiveCoroutine());
-        //m_receivingThread = new Thread( ReceiveProc );
-        //m_receivingThread.Start();
-    }
-
     public void Shutdown()
     {
         if ( m_receivingThread != null )
@@ -87,23 +78,17 @@ public class Listener
         }
     }
 
-    IEnumerator ReceiveCoroutine() {
-        Network.Log("Receive Coroutine");
-
-        m_udp.BeginReceive(new AsyncCallback(ReceiveRecur), null);
-
-        yield break;
-    }
-
     private void ReceiveRecur(IAsyncResult res) {
         IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, m_port);
         byte[] data = m_udp.EndReceive(res, ref endpoint);
 
         //Process codes
-
+        Network.Log("RECEIVED " + data.Length + " bytes");
         if (data.Length > 0) {
-            if (m_dataCallback != null)
+            if (m_dataCallback != null) {
                 m_dataCallback.Invoke(data, endpoint);
+            }
+                
         }
         m_udp.BeginReceive(new AsyncCallback(ReceiveRecur), null);
     }

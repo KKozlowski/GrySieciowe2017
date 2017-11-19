@@ -40,12 +40,21 @@ public class PlayerInput : MonoBehaviour {
 
     private void Move(Vector2 direction) {
 
-        #if DEBUG_SHIT
-        if (CharacterController.Player)
-            CharacterController.Player
-                .MoveTo((Vector2)CharacterController.Player.transform.position 
-                        + direction * Time.deltaTime*2);
-        #endif
+        //#if DEBUG_SHIT
+        //if (CharacterController.Player)
+        //    CharacterController.Player
+        //        .MoveTo((Vector2)CharacterController.Player.transform.position 
+        //                + direction * Time.deltaTime*2);
+        //#endif
+
+        if (CharacterController.Player && CharacterController.Player.gameObject.activeInHierarchy) {
+            InputEvent e = new InputEvent();
+            e.m_sessionId = Network.Client.ConnectionId;
+            e.m_direction = direction;
+
+            Network.Client.Send(e);
+        }
+        
     }
 
     private void UpdateShot(Vector3 pointerPosition) {

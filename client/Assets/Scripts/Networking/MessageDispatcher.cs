@@ -17,8 +17,9 @@ public class MessageDispatcher
         {
             if ( m_listeners[i].GetEventType() == evnt.GetEventType() )
             {
-                if ( m_listeners[i].Execute( evnt ) )
+                if (m_listeners[i].Execute(evnt)) {
                     return;
+                }
             }
         }
     }

@@ -49,7 +49,7 @@ public class NetServer : IHanshakable {
 
     void OnData( byte[] data, IPEndPoint endpoint )
     {
-        Console.WriteLine("Data received");
+        Network.Log("Data received");
         deserializer.HandleData(data, endpoint);
     }
 

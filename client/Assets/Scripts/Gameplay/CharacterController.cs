@@ -5,19 +5,20 @@ using UnityEngine;
 public class CharacterController : MonoBehaviour {
 
 	public static CharacterController Player { get; private set; }
-    public LineRenderer laser;
+    public LineRenderer m_laser;
 
     [SerializeField]
-    private bool player = false;
+    private bool m_isPlayer = false;
 
-    private void Awake() {
-        if (player)
+    public void Init(bool player) {
+        m_isPlayer = player;
+        if (m_isPlayer)
             Player = this;
     }
 
     private void Start() {
-        laser.startColor = new Color(1, 1, 1, 0);
-        laser.endColor = new Color(1, 1, 1, 0);
+        m_laser.startColor = new Color(1, 1, 1, 0);
+        m_laser.endColor = new Color(1, 1, 1, 0);
     }
 
     public void MoveTo(Vector2 newPosition) {
@@ -25,7 +26,7 @@ public class CharacterController : MonoBehaviour {
     }
 
     public void Shoot(Vector2 direction) {
-        laser.SetPositions(
+        m_laser.SetPositions(
             new Vector3[] { direction * 0.2f, direction * 100f }
             );
         StartCoroutine(shootEffect());
@@ -33,6 +34,7 @@ public class CharacterController : MonoBehaviour {
 
     public void Die() {
         Debug.Log("<dying sounds>");
+        gameObject.SetActive(false);
     }
 
     private uint currentShootId = 0;
@@ -45,12 +47,12 @@ public class CharacterController : MonoBehaviour {
 
         float timeRequired = 0.3f, timePassed = 0;
         while(timePassed < timeRequired && currentShootId == thisShootId) {
-            laser.startColor = laser.endColor = Color.Lerp(startColor, endColor, timePassed / timeRequired);
+            m_laser.startColor = m_laser.endColor = Color.Lerp(startColor, endColor, timePassed / timeRequired);
             timePassed += Time.deltaTime;
             yield return null;
         }
 
         if (currentShootId == thisShootId)
-            laser.startColor = laser.endColor = endColor;
+            m_laser.startColor = m_laser.endColor = endColor;
     }
 }

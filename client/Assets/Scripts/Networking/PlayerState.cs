@@ -7,7 +7,7 @@ using System;
 public class PlayerState {
     public int id;
 
-    public int health;
+    public float power;
     public Vector2 position;
 
     public const int maskOfHealthChange = 1 << 1;
@@ -36,7 +36,7 @@ public class PlayerState {
         writer.WriteByte((byte)changeMask);
 
         if (healthDirty) {
-            writer.WriteInteger(health);
+            writer.WriteFloat(power);
         }
         if (positionDirty) {
             writer.WriteVector2(position);
@@ -44,9 +44,7 @@ public class PlayerState {
     }
 
     public bool Deserialize(ByteStreamReader reader) {
-        int thatID = reader.ReadInt();
-        if (id != thatID)
-            return false;
+        int id = reader.ReadInt();
 
         int changeMask = reader.ReadByte();
 
@@ -54,8 +52,8 @@ public class PlayerState {
             changedHealth = (changeMask & maskOfHealthChange) != 0;
 
         if (changedHealth) {
-            health = reader.ReadInt();
-            Console.WriteLine("Applying health: " + health);
+            power = reader.ReadFloat();
+            Console.WriteLine("Applying health: " + power);
         }
         if (changedPosition) {
             position = reader.ReadVector2();

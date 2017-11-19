@@ -32,7 +32,7 @@ namespace ServerApp {
                 PlayerState ps1 = new PlayerState();
                 ps1.position = new Vector2(300, 400);
                 ps1.id = 21;
-                ps1.health = 100;
+                ps1.power = 100;
 
                 ByteStreamWriter msg = new ByteStreamWriter();
                 ps1.SetHealthDirty(true);
@@ -44,7 +44,7 @@ namespace ServerApp {
                 ps2.Deserialize(new ByteStreamReader(msg));
 
                 Console.WriteLine("ps2 position: " + ps2.position);
-                Console.WriteLine("ps2 health: " + ps2.health);
+                Console.WriteLine("ps2 power: " + ps2.power);
             }
 
             while( true )

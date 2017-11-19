@@ -7,7 +7,8 @@ public enum EventType : byte
 {
     HelloWorld = 1,
     Input = 2,
-    SpawnRequest = 3
+    SpawnRequest = 3,
+    PlayerState = 4
 }
 
 public abstract class EventBase
