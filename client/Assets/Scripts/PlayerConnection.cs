@@ -1,23 +1,44 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
 using UnityEngine;
 
 public class PlayerConnection : MonoBehaviour
 {
-    NetClient m_client;
-    Thread m_connectThread;
+    public class RespawnListener : IEventListener {
+        System.Action OnRespawn = null;
+
+        public bool Execute(EventBase e) {
+            SpawnRequestEvent respawn = (SpawnRequestEvent)e;
+            Debug.Log("Respawned?");
+            if (respawn.m_sessionId == Network.Client.ConnectionId) {
+                Debug.Log("RESPAWNED INDEED");
+            }
+
+            return true;
+        }
+
+        public EventType GetEventType() {
+            return (EventType)SpawnRequestEvent.GetStaticId();
+        }
+    }
 
     public void Start()
     {
-        m_client = new NetClient();
-        m_connectThread = new Thread( () => m_client.Connect( "127.0.0.1", 1111 ) );
-        m_connectThread.Start();
+        Network.Log = (object o) => { Debug.Log(o); };
+        StartCoroutine(Connect());
     }
 
     public void OnDestroy()
     {
-        m_connectThread.Interrupt();
-        m_client.Shutdown();
+
+    }
+
+    IEnumerator Connect() {
+        Debug.Log("DD1");
+        Network.InitAsClient("127.0.0.1", 966, 1337, this);
+        yield return new WaitForSecondsRealtime(1.0f);
+        Debug.Log("DD");
+        var e = new SpawnRequestEvent(Network.Client.ConnectionId);
+        Network.Client.Send(e);
     }
 }

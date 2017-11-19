@@ -38,10 +38,10 @@ public class NetClient : IHanshakable
         ConnectionId = -1;
     }
 
-    public void Connect( string ip, int listenPort, int receivePort )
+    public void Connect( string ip, int listenPort, int receivePort, UnityEngine.MonoBehaviour coroutineHolder = null)
     {
         m_listener = new Listener();
-        m_listener.Init(listenPort);
+        m_listener.Init(listenPort, false);
 
         m_sender = new Connection();
         m_sender.Connect( ip, receivePort + 1 );
@@ -88,11 +88,15 @@ public class NetClient : IHanshakable
         writer.WriteByte((byte)MsgFlags.ConnectionRequest);
         writer.WriteByte((byte)HandshakeMessage.ACK);
         writer.WriteInteger(connectionId);
-        m_sender.Send(writer.GetBytes());
+
+        for (int i = 0; i < 5; ++i) {
+            m_sender.Send(writer.GetBytes());
+        }
+        
         ConnectionId = connectionId;
         State = ConnectionState.Connected;
 
-        Console.WriteLine(State + ", " + ConnectionId);
+        Network.Log(State + ", " + ConnectionId);
     }
 
     public void HandleConnectionData(HandshakeMessage type, ByteStreamReader stream, IPEndPoint endpoint) {

@@ -101,7 +101,7 @@ public class ByteStreamWriter
         Write(i, SerializationHelpers.SerializeUnsignedInt);
     }
 
-    public void WriteInteger(bool b) {
+    public void WriteBool(bool b) {
         Write(b, SerializationHelpers.SerializeBool);
     }
 

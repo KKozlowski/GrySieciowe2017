@@ -16,20 +16,22 @@ public class Network
             World.Init();
         }
 
-        public void Send( EventBase e, PlayerSession target, bool reliable = false )
+        public void Send( EventBase e, int connectionId, bool reliable = false )
         {
             ByteStreamWriter stream = new ByteStreamWriter();
             stream.WriteByte( reliable ? ( byte )MsgFlags.ReliableEvent : ( byte )MsgFlags.UnreliableEvent );
             stream.WriteByte( e.GetId() );
 
             e.Serialize( stream );
-            target.GetConnection().Send( stream.GetBytes() );
+            m_server.GetConnectionById(connectionId).Send( stream.GetBytes() );
         }
     }
 
     public class ClientManager
     {
         NetClient m_client;
+
+        public int ConnectionId { get { return m_client.ConnectionId; } }
 
         public ClientManager( NetClient client )
         {
@@ -58,6 +60,8 @@ public class Network
 
     bool m_isServer;
 
+    public static System.Action<object> Log;
+
     public static void Init( bool isServer )
     {
         if ( isServer )
@@ -72,6 +76,9 @@ public class Network
 
     private static void InitBasic(bool isServer) {
         System.Diagnostics.Debug.Assert(m_network == null);
+
+        if (Log == null)
+            Log = (object o) => { System.Console.WriteLine(o.ToString()); };
 
         m_network = new Network();
         m_network.m_isServer = isServer;
@@ -92,12 +99,12 @@ public class Network
         m_network.m_server = manager;
     }
 
-    public static void InitAsClient(string serverIp, int listenPort, int receivePort) {
+    public static void InitAsClient(string serverIp, int listenPort, int receivePort, UnityEngine.MonoBehaviour coroutineHolder = null) {
         InitBasic(false);
         NetClient client = new NetClient();
         m_network.m_deserializer.Init(client, m_network.m_dispatcher);
 
-        client.Connect(serverIp, listenPort, receivePort);
+        client.Connect(serverIp, listenPort, receivePort, coroutineHolder);
         client.SetDeserializer(m_network.m_deserializer);
 
         ClientManager manager = new ClientManager(client);

@@ -7,7 +7,7 @@ namespace ClientApp
     {
         static void Main( string[] args )
         {
-            Network.Init( false );
+            Network.InitAsClient("127.0.0.1", 1000, 1337);
 
             Thread.Sleep( 1000 );
             InputEvent e = new InputEvent();

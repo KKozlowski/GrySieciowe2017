@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Threading;
 using System.Net;
 using System.Net.Sockets;
+using UnityEngine;
 
 public class Listener
 {
@@ -14,26 +16,45 @@ public class Listener
 
     ~Listener()
     {
+        Network.Log("Listener destroyed");
         Shutdown();
     }
 
-    public void Init( int port )
-    {
-        System.Diagnostics.Debug.Assert( !m_initialized, "Already initialized" );
+    private void BasicInit( int port ) {
+        System.Diagnostics.Debug.Assert(!m_initialized, "Already initialized");
 
-        m_udp = new UdpClient( port );
+        m_udp = new UdpClient(port);
         m_initialized = true;
         m_port = port;
+    }
 
-        m_receivingThread = new Thread( ReceiveProc );
-        m_receivingThread.Start();
+    public void Init( int port, bool withThread = true )
+    {
+        BasicInit(port);
+
+        if (withThread) {
+            m_receivingThread = new Thread(ReceiveProc);
+            m_receivingThread.Start();
+        } else {
+            m_udp.BeginReceive(new AsyncCallback(ReceiveRecur), null);
+        }
+        
+    }
+
+    public void Init(int port, MonoBehaviour go) {
+        BasicInit(port);
+
+        Network.Log("CO");
+        go.StartCoroutine(ReceiveCoroutine());
+        //m_receivingThread = new Thread( ReceiveProc );
+        //m_receivingThread.Start();
     }
 
     public void Shutdown()
     {
         if ( m_receivingThread != null )
         {
-            m_receivingThread.Interrupt();
+            m_receivingThread.Abort();
         }
 
         if ( m_udp != null )
@@ -64,5 +85,26 @@ public class Listener
                     m_dataCallback.Invoke( data, endpoint );
             }
         }
+    }
+
+    IEnumerator ReceiveCoroutine() {
+        Network.Log("Receive Coroutine");
+
+        m_udp.BeginReceive(new AsyncCallback(ReceiveRecur), null);
+
+        yield break;
+    }
+
+    private void ReceiveRecur(IAsyncResult res) {
+        IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, m_port);
+        byte[] data = m_udp.EndReceive(res, ref endpoint);
+
+        //Process codes
+
+        if (data.Length > 0) {
+            if (m_dataCallback != null)
+                m_dataCallback.Invoke(data, endpoint);
+        }
+        m_udp.BeginReceive(new AsyncCallback(ReceiveRecur), null);
     }
 }

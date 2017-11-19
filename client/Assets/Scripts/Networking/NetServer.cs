@@ -22,7 +22,7 @@ public class NetServer : IHanshakable {
     }
 
     IdAllocator m_connectionId = new IdAllocator();
-    List<ConnectionEntity > m_entities = new List<ConnectionEntity>();
+    Dictionary<int, ConnectionEntity > m_entities = new Dictionary<int, ConnectionEntity>();
 
     List<PendingConnectionEntity> m_pending = new List<PendingConnectionEntity>();
 
@@ -51,6 +51,14 @@ public class NetServer : IHanshakable {
     {
         Console.WriteLine("Data received");
         deserializer.HandleData(data, endpoint);
+    }
+
+    public Connection GetConnectionById(int id) {
+        ConnectionEntity ce = null;
+        if (m_entities.TryGetValue(id, out ce)) {
+            return ce.m_sender;
+        }
+        return null;
     }
 
     public void SetDeserializer(MessageDeserializer md) {
@@ -82,7 +90,7 @@ public class NetServer : IHanshakable {
             PendingConnectionEntity chosen = m_pending.Where(x => x.m_connectionId == id).FirstOrDefault();
             if (chosen != null) {
                 m_pending.Remove(chosen);
-                m_entities.Add(new ConnectionEntity(chosen));
+                m_entities[chosen.m_connectionId] = new ConnectionEntity(chosen);
                 Network.Server.World.AddPlayer(chosen.m_connectionId);
             }
         }

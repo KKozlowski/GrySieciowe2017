@@ -152,17 +152,44 @@ public class World
         }
     }
 
+    public class ProperPleaseSpawnListener : IEventListener {
+        World m_world = null;
+        public ProperPleaseSpawnListener(World w) {
+            m_world = w;
+        }
+
+        public bool Execute(EventBase e) {
+            SpawnRequestEvent input = (SpawnRequestEvent)e;
+
+            PlayerPawn pawn = m_world.TryGetPawn(input.m_sessionId);
+            //Console.WriteLine("Looking for pawn with id " + input.m_sessionId + ": " + pawn);
+            if (pawn!= null && !pawn.isPlayingNow) {
+                pawn.isPlayingNow = true;
+                m_world.RespawnPlayer(input.m_sessionId);
+            }
+
+            return true;
+        }
+
+        public EventType GetEventType() {
+            return (EventType)SpawnRequestEvent.GetStaticId();
+        }
+    }
+
     Dictionary< int, PlayerPawn > m_players 
         = new Dictionary<int, PlayerPawn>();
 
     public int respawnTime = 5;
 
     ProperInputListener m_inputListener = null;// new ProperInputListener();
+    ProperPleaseSpawnListener m_spawnListener = null;
 
     public void Init()
     {
         m_inputListener = new ProperInputListener(this);
+        m_spawnListener = new ProperPleaseSpawnListener(this);
         Network.AddListener(m_inputListener);
+        Network.AddListener(m_spawnListener);
     }
 
     private PlayerPawn TryGetPawn(int id) {
@@ -192,8 +219,9 @@ public class World
     }
 
     private void OnPawnDeath( PlayerPawn pawn ) {
-        int session = m_players.Where(x => x.Value == pawn).FirstOrDefault().Key;
-        if (session != null) {
+        var found = m_players.Where(x => x.Value == pawn);
+        if (found.Count() != 0) {
+            int id = found.ElementAt(0).Key;
             Console.WriteLine("Some pawn Died");
             //Send death event
         }
@@ -218,7 +246,16 @@ public class World
     }
 
     public void RespawnPlayer( int sessionId ) {
-        m_players[sessionId].Respawn(Vector2.zero);
+        PlayerPawn pawn = null;
+        m_players.TryGetValue(sessionId, out pawn);
+        if (pawn != null) {
+            Vector2 position = Vector2.zero;
+            pawn.Respawn(position);
+
+            var spawnEvent = new SpawnRequestEvent(sessionId, true);
+            Network.Log("Pawn " + sessionId + " respawned at " + position);
+            Network.Server.Send(spawnEvent, sessionId);
+        }
     }
 
     public void RespawnLoop() {
