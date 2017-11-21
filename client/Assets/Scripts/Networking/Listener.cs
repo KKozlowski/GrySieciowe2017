@@ -83,7 +83,7 @@ public class Listener
         byte[] data = m_udp.EndReceive(res, ref endpoint);
 
         //Process codes
-        Network.Log("RECEIVED " + data.Length + " bytes");
+        Network.Log("RECEIVED " + data.Length + " bytes {" + data.StructuralToString()+"}");
         if (data.Length > 0) {
             if (m_dataCallback != null) {
                 m_dataCallback.Invoke(data, endpoint);

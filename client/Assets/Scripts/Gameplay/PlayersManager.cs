@@ -11,7 +11,7 @@ public class PlayersManager : MonoBehaviour {
 
         public bool Execute(EventBase e) {
             PlayerStateEvent ps = (PlayerStateEvent)e;
-
+            //Debug.Log("ID: " + ps.state.id + ", position: "+ ps.state.position);
             m_manager.EnqueueState(ps.state);
 
             return true;
@@ -45,7 +45,7 @@ public class PlayersManager : MonoBehaviour {
     private Queue<PlayerState> statesToApply = new Queue<PlayerState>();
 
     public void EnqueueState(PlayerState ps) {
-        Debug.Log("Apply state for " + ps.id);
+        Debug.Log("Apply state for " + ps.id + "(pos: "+ps.position+")");
 
         statesToApply.Enqueue(ps);
     }
@@ -60,12 +60,12 @@ public class PlayersManager : MonoBehaviour {
         PlayerInstanceState pis = null;
         if (!playerInstances.TryGetValue(ps.id, out pis)) {
             pis = new PlayerInstanceState();
-            pis.state = ps;
             pis.controller = Instantiate(characterPrefab);
             pis.controller.Init(ps.id == Network.Client.ConnectionId);
             playerInstances[ps.id] = pis;
         }
 
+        pis.state = ps;
         pis.controller.MoveTo(pis.state.position);
     }
 }

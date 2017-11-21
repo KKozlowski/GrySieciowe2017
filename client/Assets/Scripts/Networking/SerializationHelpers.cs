@@ -150,4 +150,17 @@ public static class SerializationHelpers {
             BitConverter.ToSingle(bytes, offset+8),
             BitConverter.ToSingle(bytes, offset+12));
     }
+
+    public static string StructuralToString(this byte[] bytes)
+    {
+        string s = "";
+        for (int i = 0; i < bytes.Length; i++)
+        {
+            s += bytes[i].ToString();
+            if (i != bytes.Length - 1)
+                s += ".";
+        }
+        s += " (byte[])";
+        return s;
+    }
 }

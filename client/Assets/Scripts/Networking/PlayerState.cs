@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using System;
+using Network = UnityEngine.Network;
 
 public class PlayerState {
     public int id;

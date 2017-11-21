@@ -9,6 +9,7 @@ public class PlayerStateEvent : EventBase {
 
     public override void Deserialize(ByteStreamReader reader) {
         state.Deserialize(reader);
+        //Network.Log("ID: " + state.id + ", position: " + state.position);
     }
 
     public override void Serialize(ByteStreamWriter writer) {
