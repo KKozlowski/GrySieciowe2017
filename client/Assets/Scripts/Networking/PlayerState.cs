@@ -45,7 +45,7 @@ public class PlayerState {
     }
 
     public bool Deserialize(ByteStreamReader reader) {
-        int id = reader.ReadInt();
+        id = reader.ReadInt();
 
         int changeMask = reader.ReadByte();
 
