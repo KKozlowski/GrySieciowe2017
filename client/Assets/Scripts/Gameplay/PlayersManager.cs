@@ -12,8 +12,11 @@ public class PlayersManager : MonoBehaviour {
         public bool Execute(EventBase e) {
             PlayerStateEvent ps = (PlayerStateEvent)e;
             //Debug.Log("ID: " + ps.state.id + ", position: "+ ps.state.position);
-            m_manager.EnqueueState(ps.state);
-
+            
+            foreach (PlayerState state in ps.states)
+            {
+                m_manager.EnqueueState(state);
+            }
             return true;
         }
 

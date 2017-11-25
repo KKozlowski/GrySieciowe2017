@@ -28,24 +28,7 @@ namespace ServerApp {
             Network.Init( true );
             Network.AddListener( new TestInputLstener() );
 
-            {
-                PlayerState ps1 = new PlayerState();
-                ps1.position = new Vector2(300, 400);
-                ps1.id = 21;
-                ps1.power = 100;
-
-                ByteStreamWriter msg = new ByteStreamWriter();
-                ps1.SetHealthDirty(true);
-                ps1.SetPositionDirty(true);
-                ps1.Serialize( msg );
-
-                PlayerState ps2 = new PlayerState();
-                ps2.id = 21;
-                ps2.Deserialize(new ByteStreamReader(msg));
-
-                Console.WriteLine("ps2 position: " + ps2.position);
-                Console.WriteLine("ps2 power: " + ps2.power);
-            }
+            Console.WriteLine("SERVER APP Launched.\n==========");
 
             while( true )
             {

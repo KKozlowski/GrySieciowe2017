@@ -39,7 +39,7 @@ public class PlayerConnection : MonoBehaviour
 
     public void Awake()
     {
-        Network.Log = (object o) => { Debug.Log(o); };
+        Network.Log = Debug.Log;
         StartCoroutine(Connect("127.0.0.1", 966, 1337));
     }
 
@@ -63,13 +63,6 @@ public class PlayerConnection : MonoBehaviour
         {
             var e = new SpawnRequestEvent(Network.Client.ConnectionId);
 
-            Network.Client.Send(e);
-        }
-        
-        {
-            InputEvent e = new InputEvent();
-            e.m_sessionId = 0;
-            e.m_direction = new Vector2(1.2f, 3.4f);
             Network.Client.Send(e);
         }
     }

@@ -32,9 +32,15 @@ public class PlayerPawn
         m_position += m_movementDirection * dt * m_movementSpeed;
     }
 
-    public void Move(Vector2 direction) {
-        m_movementDirection = direction.normalized;
-        Console.WriteLine("New direction: " + m_movementDirection.ToString());
+    public void Move(Vector2 direction)
+    {
+        Vector2 normalized = direction.normalized;
+        if (m_movementDirection != normalized)
+        {
+            m_movementDirection = normalized;
+            Console.WriteLine("New direction for "+ Id+ ": " + m_movementDirection.ToString());
+        }
+        
     }
 
     public void ShootAtDirection(Vector2 direction) {
@@ -227,11 +233,9 @@ public class World
             }
             //Network.Log("UPDATE TICK");
             try {
-                foreach (var kvp in m_players) {
-                    foreach (int id in m_players.Keys) {
-                        SendPawnStateToPlayer(id, kvp.Value);
-                        //Network.Log("SENDING STATE");
-                    }
+                foreach (int id in m_players.Keys) {
+                    SendStatesToPlayer(id);
+                    //Network.Log("SENDING STATE");
                 }
             } catch (InvalidOperationException) {
                 Network.Log("Concurrency problem.");
@@ -275,20 +279,39 @@ public class World
         }
     }
 
-    public void SendPawnStateToPlayer(int playerConnectionId, PlayerPawn pawn) {
-        PlayerState ps = new PlayerState();
-        ps.id = pawn.Id;
-        ps.power = pawn.Power;
-        ps.SetHealthDirty(true);
-        ps.position = pawn.Position;
-        ps.SetPositionDirty(true);
-
+    public void SendStatesToPlayer(int playerConnectionId)
+    {
         PlayerStateEvent e = new PlayerStateEvent();
-        e.state = ps;
-        Network.Log("Sending state of " + ps.id + " (pos: " + e.state.position.ToString() + ") to " + playerConnectionId);
+        foreach (var kvp in m_players)
+        {
+            PlayerPawn pawn = kvp.Value;
+            PlayerState ps = new PlayerState();
+            ps.id = pawn.Id;
+            ps.power = pawn.Power;
+            ps.SetHealthDirty(true);
+            ps.position = pawn.Position;
+            ps.SetPositionDirty(true);
+
+            e.states.Add(ps);
+        }
+
         Network.Server.Send(e, playerConnectionId);
-        
     }
+
+    //public void SendPawnStateToPlayer(int playerConnectionId, PlayerPawn pawn) {
+    //    PlayerState ps = new PlayerState();
+    //    ps.id = pawn.Id;
+    //    ps.power = pawn.Power;
+    //    ps.SetHealthDirty(true);
+    //    ps.position = pawn.Position;
+    //    ps.SetPositionDirty(true);
+
+    //    PlayerStateEvent e = new PlayerStateEvent();
+    //    e.state = ps;
+    //    Network.Log("Sending state of " + ps.id + " (pos: " + e.state.position.ToString() + ") to " + playerConnectionId);
+    //    Network.Server.Send(e, playerConnectionId);
+        
+    //}
 
     public bool IsPlayerAlive(int sessionId) {
         PlayerPawn pawn = null;

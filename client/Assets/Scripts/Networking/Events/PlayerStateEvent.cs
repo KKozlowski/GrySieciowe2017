@@ -5,15 +5,26 @@ using UnityEngine;
 
 public class PlayerStateEvent : EventBase {
 
-    public PlayerState state = new PlayerState();
+    public List<PlayerState> states = new List<PlayerState>();
 
-    public override void Deserialize(ByteStreamReader reader) {
-        state.Deserialize(reader);
+    public override void Deserialize(ByteStreamReader reader)
+    {
+        int count = reader.ReadInt();
+        for (int i = 0; i < count; i++)
+        {
+            PlayerState ps = new PlayerState();
+            ps.Deserialize(reader);
+            states.Add(ps);
+        }
         //Network.Log("ID: " + state.id + ", position: " + state.position);
     }
 
     public override void Serialize(ByteStreamWriter writer) {
-        state.Serialize(writer);
+        writer.WriteInteger(states.Count);
+        foreach (PlayerState playerState in states)
+        {
+            playerState.Serialize(writer);
+        }
     }
 
     public override byte GetId() {
