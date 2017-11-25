@@ -1,19 +1,57 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 public class Network
 {
+    private class ReliableEventResponseListener : IEventListener
+    {
+        private Action<int> callback;
+        public ReliableEventResponseListener(Action<int> callback)
+        {
+            this.callback = callback;
+        }
+
+        public EventType GetEventType()
+        {
+            return EventType.ReliableEventResponse;
+        }
+
+        public bool Execute(EventBase e)
+        {
+            ReliableEventBase reb = e as ReliableEventBase;
+            Network.Log("Response received");
+            if (reb!=null)
+            {
+                
+                callback(reb.m_reliableEventId);
+                return true;
+            }
+            return false;
+        }
+    }
+
     public class ServerManager
     {
         NetServer m_server;
 
         public World World { get; private set; }
 
+        private int m_lastReliableEventId = 0;
+
+        private Dictionary<int, ReliableEventBase> m_reliablesToRepeat
+            = new Dictionary<int, ReliableEventBase>();
+
+        private ReliableEventResponseListener m_responseListener;
+
         public ServerManager( NetServer server )
         {
             m_server = server;
             World = new World();
             World.Init();
+
+            m_responseListener = new ReliableEventResponseListener(ReleaseReliable);
+            Network.AddListener(m_responseListener);
         }
 
         public void Send( EventBase e, int connectionId, bool reliable = false )
@@ -24,6 +62,18 @@ public class Network
 
             e.Serialize( stream );
             m_server.GetConnectionById(connectionId).Send( stream.GetBytes() );
+            if (reliable && e is ReliableEventBase) {
+                ReliableEventBase reb = e as ReliableEventBase;
+                m_reliablesToRepeat[reb.m_reliableEventId] = reb;
+            }
+        }
+
+        public void ReleaseReliable(int id) {
+            m_reliablesToRepeat.Remove(id);
+        }
+
+        public int GetNewReliableEventId() {
+            return m_lastReliableEventId++;
         }
     }
 
@@ -31,11 +81,21 @@ public class Network
     {
         NetClient m_client;
 
+        private int m_lastReliableEventId = 0;
+
         public int ConnectionId { get { return m_client.ConnectionId; } }
+
+        private Dictionary<int, ReliableEventBase> m_reliablesToRepeat 
+            = new Dictionary<int, ReliableEventBase>();
+
+        private ReliableEventResponseListener m_responseListener;
 
         public ClientManager( NetClient client )
         {
             m_client = client;
+
+            m_responseListener = new ReliableEventResponseListener(ReleaseReliable);
+            Network.AddListener(m_responseListener);
         }
 
         public void Send( EventBase e, bool reliable = false )
@@ -45,6 +105,20 @@ public class Network
             stream.WriteByte( e.GetId() );
             e.Serialize( stream );
             m_client.Send( stream.GetBytes() );
+            if (reliable && e is ReliableEventBase)
+            {
+                ReliableEventBase reb = e as ReliableEventBase;
+                m_reliablesToRepeat[reb.m_reliableEventId] = reb;
+            }
+        }
+
+        public void ReleaseReliable(int id)
+        {
+            m_reliablesToRepeat.Remove(id);
+        }
+
+        public int GetNewReliableEventId() {
+            return m_lastReliableEventId++;
         }
 
         public void Shutdown() {

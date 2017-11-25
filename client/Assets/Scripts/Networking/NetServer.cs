@@ -61,6 +61,11 @@ public class NetServer : IHanshakable {
         return null;
     }
 
+    public List<int> GetAllConnectionIds()
+    {
+        return m_entities.Keys.ToList();
+    }
+
     public void SetDeserializer(MessageDeserializer md) {
         deserializer = md;
     }

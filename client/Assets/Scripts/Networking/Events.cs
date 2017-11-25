@@ -5,10 +5,13 @@ using System.Reflection;
 
 public enum EventType : byte
 {
+    Abstract =0,
     HelloWorld = 1,
     Input = 2,
     SpawnRequest = 3,
-    PlayerState = 4
+    PlayerState = 4,
+    Shot = 5,
+    ReliableEventResponse = 6
 }
 
 public abstract class EventBase
@@ -20,6 +23,21 @@ public abstract class EventBase
     public EventType GetEventType()
     {
         return (EventType)GetId();
+    }
+}
+
+public abstract class ReliableEventBase : EventBase {
+    public int m_reliableEventId;
+    public override void Serialize(ByteStreamWriter writer) {
+        writer.WriteInteger(m_reliableEventId);
+    }
+
+    public override void Deserialize(ByteStreamReader reader) {
+        m_reliableEventId = reader.ReadInt();
+    }
+
+    public static byte GetStaticId() {
+        return (byte)EventType.Abstract;
     }
 }
 

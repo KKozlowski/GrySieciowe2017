@@ -61,6 +61,12 @@ public class MessageDeserializer
         }
         else if ( HasFlag( flags, ( byte )MsgFlags.ReliableEvent ) )
         {
+            byte eventType = stream.ReadByte();
+            EventBase evnt = m_events.CreateEvent(eventType);
+
+            evnt.Deserialize(stream);
+            m_dispatcher.PushEvent(evnt);
+
             return true;
         }
 

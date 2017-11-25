@@ -73,6 +73,11 @@ public class PlayerInput : MonoBehaviour {
     }
 
     private void Shoot(Vector2 direction) {
+        ShotEvent se = new ShotEvent();
+        se.m_direction = direction;
+        se.m_who = Network.Client.ConnectionId;
+        Network.Client.Send(se);
+
         Debug.DrawRay(CharacterController.Player.transform.position, direction);
 #if DEBUG_SHIT
         if (CharacterController.Player)

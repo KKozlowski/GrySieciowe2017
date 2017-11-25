@@ -46,6 +46,12 @@
     <Compile Include="..\..\client\Assets\Scripts\Networking\Events\PlayerStateEvent.cs">
       <Link>Networking\Events\PlayerStateEvent.cs</Link>
     </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\Events\ReliableEventResponse.cs">
+      <Link>Networking\Events\ReliableEventResponse.cs</Link>
+    </Compile>
+    <Compile Include="..\..\client\Assets\Scripts\Networking\Events\ShotEvent.cs">
+      <Link>Networking\Events\ShotEvent.cs</Link>
+    </Compile>
     <Compile Include="..\..\client\Assets\Scripts\Networking\FastMap.cs">
       <Link>Networking\A\</Link>
     </Compile>

@@ -124,6 +124,11 @@ public class PlayerPawn
         m_power += power;
     }
 
+    public void Shoot(Vector2 direction)
+    {
+        Network.Log("Player " + Id + " shot at direction " + direction);
+    }
+
     public PlayerPawn(World w, Vector2 position, int id) {
         world = w;
         m_position = position;
@@ -190,6 +195,33 @@ public class World
         }
     }
 
+    public class ProperShotListener : IEventListener {
+        World m_world = null;
+        public ProperShotListener(World w) {
+            m_world = w;
+        }
+
+        public bool Execute(EventBase e) {
+            ShotEvent shot = (ShotEvent)e;
+
+            PlayerPawn pawn = m_world.TryGetPawn(shot.m_who);
+            //Console.WriteLine("Looking for pawn with id " + input.m_sessionId + ": " + pawn);
+            if (pawn != null && pawn.m_isPlayingNow) {
+                pawn.Shoot(shot.m_direction);
+            }
+
+            ReliableEventResponse response = new ReliableEventResponse();
+            response.m_reliableEventId = shot.m_reliableEventId;
+            Network.Server.Send(response, shot.m_who, false);
+
+            return true;
+        }
+
+        public EventType GetEventType() {
+            return (EventType)ShotEvent.GetStaticId();
+        }
+    }
+
     Dictionary< int, PlayerPawn > m_players 
         = new Dictionary<int, PlayerPawn>();
 
@@ -197,6 +229,7 @@ public class World
 
     ProperInputListener m_inputListener = null;// new ProperInputListener();
     ProperPleaseSpawnListener m_spawnListener = null;
+    private ProperShotListener m_shotListener = null;
 
     System.Random m_radom = new System.Random();
 
@@ -206,8 +239,10 @@ public class World
     {
         m_inputListener = new ProperInputListener(this);
         m_spawnListener = new ProperPleaseSpawnListener(this);
+        m_shotListener = new ProperShotListener(this);
         Network.AddListener(m_inputListener);
         Network.AddListener(m_spawnListener);
+        Network.AddListener(m_shotListener);
 
         updateThread = new Thread(UpdateLoop);
         updateThread.Start();
