@@ -31,8 +31,11 @@ public class PlayerConnection : MonoBehaviour
         //StartCoroutine(CoroutineConnect("127.0.0.1", 966, 1337));
     }
 
-    private void Start() {
-        
+    private void Update() {
+        if (Network.Client != null && Network.Client.ConnectionId >= 0)
+        {
+            Network.Client.ResendRemainingReliables();
+        }
     }
 
     public void OnDestroy()

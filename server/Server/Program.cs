@@ -32,7 +32,8 @@ namespace ServerApp {
 
             while( true )
             {
-                Thread.Sleep(50);
+                Thread.Sleep(16);
+                Network.Server.ResendRemainingReliables();
             }
         }
     }

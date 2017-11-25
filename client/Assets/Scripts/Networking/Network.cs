@@ -39,8 +39,20 @@ public class Network
 
         private int m_lastReliableEventId = 0;
 
-        private Dictionary<int, ReliableEventBase> m_reliablesToRepeat
-            = new Dictionary<int, ReliableEventBase>();
+        private class REventIdPair
+        {
+            public int id;
+            public ReliableEventBase eventToSend;
+
+            public REventIdPair(int id, ReliableEventBase e)
+            {
+                this.id = id;
+                eventToSend = e;
+            }
+        }
+
+        private Dictionary<int, REventIdPair> m_reliablesToRepeat
+            = new Dictionary<int, REventIdPair>();
 
         private ReliableEventResponseListener m_responseListener;
 
@@ -54,7 +66,7 @@ public class Network
             Network.AddListener(m_responseListener);
         }
 
-        public void Send( EventBase e, int connectionId, bool reliable = false )
+        public void Send( EventBase e, int connectionId, bool reliable = false, bool internalResend = false )
         {
             ByteStreamWriter stream = new ByteStreamWriter();
             stream.WriteByte( reliable ? ( byte )MsgFlags.ReliableEvent : ( byte )MsgFlags.UnreliableEvent );
@@ -62,9 +74,17 @@ public class Network
 
             e.Serialize( stream );
             m_server.GetConnectionById(connectionId).Send( stream.GetBytes() );
-            if (reliable && e is ReliableEventBase) {
+            if (reliable && !internalResend && e is ReliableEventBase) {
                 ReliableEventBase reb = e as ReliableEventBase;
-                m_reliablesToRepeat[reb.m_reliableEventId] = reb;
+                m_reliablesToRepeat[reb.m_reliableEventId] = new REventIdPair(connectionId, reb);
+            }
+        }
+
+        public void ResendRemainingReliables()
+        {
+            foreach (var pair in m_reliablesToRepeat)
+            {
+                Send(pair.Value.eventToSend, pair.Value.id, true, true);
             }
         }
 
@@ -98,17 +118,23 @@ public class Network
             Network.AddListener(m_responseListener);
         }
 
-        public void Send( EventBase e, bool reliable = false )
+        public void Send( EventBase e, bool reliable = false, bool internalResend = false )
         {
             ByteStreamWriter stream = new ByteStreamWriter();
             stream.WriteByte( reliable ? (byte)MsgFlags.ReliableEvent : (byte)MsgFlags.UnreliableEvent );
             stream.WriteByte( e.GetId() );
             e.Serialize( stream );
             m_client.Send( stream.GetBytes() );
-            if (reliable && e is ReliableEventBase)
+            if (reliable && !internalResend && e is ReliableEventBase)
             {
                 ReliableEventBase reb = e as ReliableEventBase;
                 m_reliablesToRepeat[reb.m_reliableEventId] = reb;
+            }
+        }
+
+        public void ResendRemainingReliables() {
+            foreach (var pair in m_reliablesToRepeat) {
+                Send(pair.Value, true, true);
             }
         }
 
@@ -140,6 +166,11 @@ public class Network
 
     public static System.Action<object> Log;
 
+    static Network()
+    {
+        m_network = new Network();
+    }
+
     public static void Init( bool isServer )
     {
         if ( isServer )
@@ -158,7 +189,6 @@ public class Network
         if (Log == null)
             Log = (object o) => { System.Console.WriteLine(o.ToString()); };
 
-        m_network = new Network();
         m_network.m_isServer = isServer;
 
         m_network.m_dispatcher = new MessageDispatcher();

@@ -195,7 +195,7 @@ public class World
         }
     }
 
-    public class ProperShotListener : IEventListener {
+    public class ProperShotListener : ReliableEventListener, IEventListener {
         World m_world = null;
         public ProperShotListener(World w) {
             m_world = w;
@@ -203,6 +203,8 @@ public class World
 
         public bool Execute(EventBase e) {
             ShotEvent shot = (ShotEvent)e;
+            if (WasExecuted(shot.m_who, shot.m_reliableEventId))
+                return false;
 
             PlayerPawn pawn = m_world.TryGetPawn(shot.m_who);
             //Console.WriteLine("Looking for pawn with id " + input.m_sessionId + ": " + pawn);
@@ -214,6 +216,7 @@ public class World
             response.m_reliableEventId = shot.m_reliableEventId;
             Network.Server.Send(response, shot.m_who, false);
 
+            AddExecuted(shot.m_who, shot.m_reliableEventId);
             return true;
         }
 

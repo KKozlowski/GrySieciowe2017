@@ -7,6 +7,33 @@ public interface IEventListener
     bool Execute( EventBase e );
 }
 
+public class ReliableEventListener
+{
+    Dictionary<int, HashSet<int>> executedEventsForEachUser = new Dictionary<int, HashSet<int>>();
+
+    protected void AddExecuted(int user, int eventId)
+    {
+        HashSet<int> list = null;
+        if (!executedEventsForEachUser.TryGetValue(user, out list))
+        {
+            list = new HashSet<int>();
+            executedEventsForEachUser[user] = list;
+        }
+        list.Add(eventId);
+    }
+
+    public bool WasExecuted(int user, int eventId)
+    {
+        HashSet<int> list = null;
+        if (!executedEventsForEachUser.TryGetValue(user, out list))
+        {
+            return false;
+        }
+
+        return list.Contains(eventId);
+    }
+}
+
 public class MessageDispatcher
 {
     List< IEventListener > m_listeners = new List<IEventListener>();
