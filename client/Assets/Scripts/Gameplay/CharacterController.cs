@@ -7,6 +7,9 @@ public class CharacterController : MonoBehaviour {
 	public static CharacterController Player { get; private set; }
     public LineRenderer m_laser;
 
+    private float m_power;
+    public float Power { get { return m_power; } set {SetPower(value);} }
+
     [SerializeField]
     private bool m_isPlayer = false;
 
@@ -23,6 +26,12 @@ public class CharacterController : MonoBehaviour {
 
     public void MoveTo(Vector2 newPosition) {
         transform.position = newPosition;
+    }
+
+    public void SetPower(float power)
+    {
+        m_power = power;
+        gameObject.SetActive(m_power>0);
     }
 
     public void Shoot(Vector2 direction) {

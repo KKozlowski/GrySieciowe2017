@@ -4,20 +4,6 @@ using UnityEngine;
 
 public class PlayerConnection : MonoBehaviour
 {
-    public class StupidInputListener : IEventListener {
-        System.Action OnRespawn = null;
-
-        public bool Execute(EventBase e) {
-            InputEvent input = (InputEvent)e;
-            Debug.Log("Received input event for some reason");
-
-            return false;
-        }
-
-        public EventType GetEventType() {
-            return (EventType)InputEvent.GetStaticId();
-        }
-    }
 
     public class RespawnListener : IEventListener {
         System.Action OnRespawn = null;
@@ -37,15 +23,16 @@ public class PlayerConnection : MonoBehaviour
         }
     }
 
+    public System.Action<PlayerConnection, int> OnConnect;
+
     public void Awake()
     {
         Network.Log = Debug.Log;
-        StartCoroutine(Connect("127.0.0.1", 966, 1337));
+        //StartCoroutine(CoroutineConnect("127.0.0.1", 966, 1337));
     }
 
     private void Start() {
-        Network.AddListener(new RespawnListener());
-        Network.AddListener(new StupidInputListener());
+        
     }
 
     public void OnDestroy()
@@ -53,13 +40,26 @@ public class PlayerConnection : MonoBehaviour
         Network.Client.Shutdown();
     }
 
-    IEnumerator Connect(string serverIp, int myPort, int serverPort) {
+    public void Connect(string serverIp, int myPort, int serverPort, System.Action callback=null)
+    {
+        StartCoroutine(CoroutineConnect(serverIp, myPort, serverPort, callback));
+    }
+
+    IEnumerator CoroutineConnect(string serverIp, int myPort, int serverPort, System.Action callback=null) {
         Debug.Log("Connection try started");
         Network.InitAsClient(serverIp, myPort, serverPort);
         while (Network.Client.ConnectionId < 0)
             yield return null;
-        yield return new WaitForSeconds(2.0f);
+        yield return null;
+        if (callback != null)
+            callback();
+        if (OnConnect != null)
+            OnConnect(this, Network.Client.ConnectionId);
+        Network.AddListener(new RespawnListener());
         Debug.Log("Connected");
+
+        yield return new WaitForSeconds(1.0f);
+        
         {
             var e = new SpawnRequestEvent(Network.Client.ConnectionId);
 

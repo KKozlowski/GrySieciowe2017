@@ -28,11 +28,28 @@ public class PlayersManager : MonoBehaviour {
     [SerializeField]
     private CharacterController characterPrefab;
 
+    [SerializeField] private PlayerConnection connection;
+
     private StateListener m_listenerOfStates;
 
-    private void Start() {
-        m_listenerOfStates = new StateListener(this);
-        Network.AddListener(m_listenerOfStates);
+    private void Start()
+    {
+        connection.OnConnect += (PlayerConnection playerConnection, int connectionId) =>
+        {
+            Init();
+        };
+    }
+
+    private bool initialized = false;
+    public void Init()
+    {
+        if (!initialized)
+        {
+            m_listenerOfStates = new StateListener(this);
+            Network.AddListener(m_listenerOfStates);
+            initialized = true;
+        }
+        
     }
 
 
@@ -48,7 +65,7 @@ public class PlayersManager : MonoBehaviour {
     private Queue<PlayerState> statesToApply = new Queue<PlayerState>();
 
     public void EnqueueState(PlayerState ps) {
-        Debug.Log("Apply state for " + ps.id + "(pos: "+ps.position+")");
+        //Debug.Log("Apply state for " + ps.id + "(pos: "+ps.position+")");
 
         statesToApply.Enqueue(ps);
     }
@@ -70,5 +87,6 @@ public class PlayersManager : MonoBehaviour {
 
         pis.state = ps;
         pis.controller.MoveTo(pis.state.position);
+        pis.controller.Power = pis.state.power;
     }
 }

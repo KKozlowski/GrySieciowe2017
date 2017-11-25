@@ -8,7 +8,7 @@ public class PlayerPawn
 {
     Vector2 m_position;
     float m_radius;
-    float m_power = 1;
+    float m_power = 0;
     float m_movementSpeed = 1;
     float m_laserLength = 5;
 
