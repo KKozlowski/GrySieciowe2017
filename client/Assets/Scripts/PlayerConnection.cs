@@ -40,7 +40,8 @@ public class PlayerConnection : MonoBehaviour
 
     public void OnDestroy()
     {
-        Network.Client.Shutdown();
+        if (Network.Client!=null)
+            Network.Client.Shutdown();
     }
 
     public void Connect(string serverIp, int myPort, int serverPort, System.Action callback=null)

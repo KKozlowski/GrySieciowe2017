@@ -25,12 +25,56 @@ public class PlayersManager : MonoBehaviour {
         }
     }
 
+    public class ShotListener : ReliableEventListener, IEventListener {
+        PlayersManager m_manager = null;
+        public ShotListener(PlayersManager w) {
+            m_manager = w;
+        }
+
+        public bool Execute(EventBase e) {
+            
+            ShotEvent ps = (ShotEvent)e;
+            Network.Client.RespondToReliableEvent(ps.m_reliableEventId);
+            Debug.Log("Reliable event: " + ps.m_reliableEventId);
+
+            if (WasExecuted(0, ps.m_reliableEventId))
+                return false;
+
+            PlayerInstanceState pis = null;
+            m_manager.playerInstances.TryGetValue(ps.m_who, out pis);
+            if (pis!=null)
+            {
+                m_manager.shotDatas.Enqueue(new ShotData()
+                {
+                    controller = pis.controller,
+                    direction = ps.m_direction,
+                    point =  ps.m_point
+                });
+            }
+
+            AddExecuted(0, ps.m_reliableEventId);
+            return true;
+        }
+
+        public EventType GetEventType() {
+            return (EventType)ShotEvent.GetStaticId();
+        }
+    }
+
+    private class ShotData
+    {
+        public CharacterController controller;
+        public Vector2 point;
+        public Vector2 direction;
+    }
+
     [SerializeField]
     private CharacterController characterPrefab;
 
     [SerializeField] private PlayerConnection connection;
 
     private StateListener m_listenerOfStates;
+    private ShotListener m_shotListener;
 
     private void Start()
     {
@@ -46,12 +90,13 @@ public class PlayersManager : MonoBehaviour {
         if (!initialized)
         {
             m_listenerOfStates = new StateListener(this);
+            m_shotListener = new ShotListener(this);
             Network.AddListener(m_listenerOfStates);
+            Network.AddListener(m_shotListener);
             initialized = true;
         }
         
     }
-
 
     public class PlayerInstanceState {
         public PlayerState state;
@@ -63,6 +108,7 @@ public class PlayersManager : MonoBehaviour {
         = new Dictionary<int, PlayerInstanceState>();
 
     private Queue<PlayerState> statesToApply = new Queue<PlayerState>();
+    private Queue<ShotData> shotDatas = new Queue<ShotData>();
 
     public void EnqueueState(PlayerState ps) {
         //Debug.Log("Apply state for " + ps.id + "(pos: "+ps.position+")");
@@ -73,6 +119,12 @@ public class PlayersManager : MonoBehaviour {
     void Update() {
         while(statesToApply.Count > 0) {
             ApplyState(statesToApply.Dequeue());
+        }
+        while (shotDatas.Count > 0)
+        {
+            var shot = shotDatas.Dequeue();
+            shot.controller.MoveTo(shot.point);
+            shot.controller.Shoot(shot.direction);
         }
     }
 

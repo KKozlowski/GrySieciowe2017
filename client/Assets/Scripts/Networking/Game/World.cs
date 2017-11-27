@@ -7,10 +7,10 @@ using System.Threading;
 public class PlayerPawn
 {
     Vector2 m_position;
-    float m_radius;
+    float m_radius = 2.5f;
     float m_power = 0;
     float m_movementSpeed = 1;
-    float m_laserLength = 5;
+    float m_laserLength = 12.5f;
 
     Vector2 m_movementDirection = Vector2.zero;
 
@@ -44,6 +44,7 @@ public class PlayerPawn
     }
 
     public void ShootAtDirection(Vector2 direction) {
+        Network.Log("Player " + Id + " shot at direction " + direction);
         SimpleRay2D ray = new SimpleRay2D();
         ray.origin = m_position;
         ray.direction = direction;
@@ -55,6 +56,8 @@ public class PlayerPawn
     {
         float powerIncome = 0.0f;
 
+        Network.Log("Player " + Id + " receives " + dmg + " damage.");
+
         if ( m_power < dmg )
         {
             // death
@@ -65,9 +68,15 @@ public class PlayerPawn
         {
             AddPower(-dmg);
             powerIncome = dmg;
+            if (m_power < 0.01f)
+                Die();
         }
 
+        Network.Log("Player " + Id + " now has " + m_power + " power.");
+
         powerIncome *= Mathf.Exp( -dmg / 15 );
+
+        
 
         return powerIncome;
     }
@@ -76,6 +85,8 @@ public class PlayerPawn
         m_power = 0;
         IsAlive = false;
         m_lastDeathTime = DateTime.Now;
+
+        Network.Log("Player " + Id + " died.");
 
         if (OnDeath != null)
             OnDeath(this);
@@ -122,11 +133,6 @@ public class PlayerPawn
     public void AddPower( float power )
     {
         m_power += power;
-    }
-
-    public void Shoot(Vector2 direction)
-    {
-        Network.Log("Player " + Id + " shot at direction " + direction);
     }
 
     public PlayerPawn(World w, Vector2 position, int id) {
@@ -203,21 +209,22 @@ public class World
 
         public bool Execute(EventBase e) {
             ShotEvent shot = (ShotEvent)e;
-            if (WasExecuted(shot.m_who, shot.m_reliableEventId))
-                return false;
 
-            PlayerPawn pawn = m_world.TryGetPawn(shot.m_who);
-            //Console.WriteLine("Looking for pawn with id " + input.m_sessionId + ": " + pawn);
-            if (pawn != null && pawn.m_isPlayingNow) {
-                pawn.Shoot(shot.m_direction);
+            Network.Server.RespondToReliableEvent(shot.m_reliableEventId, shot.m_who);
+
+            if (!WasExecuted(shot.m_who, shot.m_reliableEventId))
+            {
+                PlayerPawn pawn = m_world.TryGetPawn(shot.m_who);
+                //Console.WriteLine("Looking for pawn with id " + input.m_sessionId + ": " + pawn);
+                if (pawn != null && pawn.m_isPlayingNow)
+                {
+                    pawn.ShootAtDirection(shot.m_direction);
+                }
+
+                AddExecuted(shot.m_who, shot.m_reliableEventId);
+                return true;
             }
-
-            ReliableEventResponse response = new ReliableEventResponse();
-            response.m_reliableEventId = shot.m_reliableEventId;
-            Network.Server.Send(response, shot.m_who, false);
-
-            AddExecuted(shot.m_who, shot.m_reliableEventId);
-            return true;
+            else return false;
         }
 
         public EventType GetEventType() {
@@ -336,21 +343,6 @@ public class World
         Network.Server.Send(e, playerConnectionId);
     }
 
-    //public void SendPawnStateToPlayer(int playerConnectionId, PlayerPawn pawn) {
-    //    PlayerState ps = new PlayerState();
-    //    ps.id = pawn.Id;
-    //    ps.power = pawn.Power;
-    //    ps.SetHealthDirty(true);
-    //    ps.position = pawn.Position;
-    //    ps.SetPositionDirty(true);
-
-    //    PlayerStateEvent e = new PlayerStateEvent();
-    //    e.state = ps;
-    //    Network.Log("Sending state of " + ps.id + " (pos: " + e.state.position.ToString() + ") to " + playerConnectionId);
-    //    Network.Server.Send(e, playerConnectionId);
-        
-    //}
-
     public bool IsPlayerAlive(int sessionId) {
         PlayerPawn pawn = null;
         m_players.TryGetValue(sessionId, out pawn);
@@ -391,9 +383,11 @@ public class World
     }
 
     public void RespawnLoop() {
-        foreach (var kvp in m_players.Where(x=>x.Value == null)) {
-            if (kvp.Value.m_isPlayingNow 
-                && (DateTime.Now - kvp.Value.m_lastDeathTime).Seconds >= respawnTime) {
+        foreach (var kvp in m_players.Where(x=>!x.Value.IsAlive)) {
+            Network.Log("Player " + kvp.Key + " died " + (DateTime.Now - kvp.Value.m_lastDeathTime).Seconds + " s ago.");
+            if (kvp.Value.m_isPlayingNow
+                && (DateTime.Now - kvp.Value.m_lastDeathTime).Seconds >= respawnTime)
+            {
                 RespawnPlayer(kvp.Key);
             }
         }
@@ -408,6 +402,7 @@ public class World
     public void ShootLaser( SimpleRay2D ray, PlayerPawn owner )
     {
         List< PlayerPawn > playersHit = CastRay( ray );
+        Network.Log("Laser hits " + playersHit.Count + " players.");
         float laserPower = owner.GetPower();
         float powerAccumulator = 0.0f;
         for ( int i = 0; i < playersHit.Count; ++i )
@@ -419,6 +414,17 @@ public class World
         }
 
         owner.AddPower( powerAccumulator );
+
+        ShotEvent se = new ShotEvent();
+        se.m_direction = ray.direction;
+        se.m_point = owner.Position;
+        se.m_who = owner.Id;
+        se.m_reliableEventId = Network.Server.GetNewReliableEventId();
+        foreach (int id in m_players.Keys)
+        {
+            Network.Server.Send(se, id, true);
+        }
+
     }
 
     List< PlayerPawn > CastRay( SimpleRay2D ray )

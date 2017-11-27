@@ -80,10 +80,10 @@ public class PlayerInput : MonoBehaviour {
         Network.Client.Send(se); Network.Client.Send(se);
 
         Debug.DrawRay(CharacterController.Player.transform.position, direction);
-#if DEBUG_SHIT
-        if (CharacterController.Player)
-            CharacterController.Player
-                .Shoot(direction);
-        #endif
+//#if DEBUG_SHIT
+//        if (CharacterController.Player)
+//            CharacterController.Player
+//                .Shoot(direction);
+//        #endif
     }
 }
