@@ -285,7 +285,8 @@ public class World
             } catch (InvalidOperationException) {
                 Network.Log("Concurrency problem.");
             }
-            
+
+            RespawnLoop();
         }
     }
 
@@ -293,15 +294,6 @@ public class World
         PlayerPawn pawn = null;
         m_players.TryGetValue(id, out pawn);
         return pawn;
-    }
-
-    public void Update(float dt) {
-        foreach (var kvp in m_players) {
-            if (kvp.Value.IsAlive)
-                kvp.Value.Update(dt);
-        }
-
-        RespawnLoop();
     }
 
     public PlayerPawn AddPlayer(int sessionId )
@@ -382,9 +374,10 @@ public class World
         }
     }
 
-    public void RespawnLoop() {
+    public void RespawnLoop()
+    {
+        var dead = m_players.Where(x => !x.Value.IsAlive).ToList();
         foreach (var kvp in m_players.Where(x=>!x.Value.IsAlive)) {
-            Network.Log("Player " + kvp.Key + " died " + (DateTime.Now - kvp.Value.m_lastDeathTime).Seconds + " s ago.");
             if (kvp.Value.m_isPlayingNow
                 && (DateTime.Now - kvp.Value.m_lastDeathTime).Seconds >= respawnTime)
             {
