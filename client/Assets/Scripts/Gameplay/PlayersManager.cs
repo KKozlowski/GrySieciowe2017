@@ -35,7 +35,7 @@ public class PlayersManager : MonoBehaviour {
             
             ShotEvent ps = (ShotEvent)e;
             Network.Client.RespondToReliableEvent(ps.m_reliableEventId);
-            Debug.Log("Reliable event: " + ps.m_reliableEventId);
+            Debug.Log("Received reliable event: " + ps.m_reliableEventId);
 
             if (WasExecuted(0, ps.m_reliableEventId))
                 return false;

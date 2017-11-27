@@ -63,4 +63,9 @@ public class PlayerState {
 
         return true;
     }
+
+    public static float GetRadiusByPower(float power)
+    {
+        return 1.5f + Mathf.Sqrt(power);
+    }
 }

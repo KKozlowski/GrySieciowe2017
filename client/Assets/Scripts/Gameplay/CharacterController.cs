@@ -32,6 +32,8 @@ public class CharacterController : MonoBehaviour {
     {
         m_power = power;
         gameObject.SetActive(m_power>0);
+        float radius = PlayerState.GetRadiusByPower(m_power);
+        transform.localScale = new Vector3(radius, radius, radius);
     }
 
     public void Shoot(Vector2 direction) {

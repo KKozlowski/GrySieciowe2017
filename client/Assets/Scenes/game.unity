@@ -428,7 +428,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69ec19f26539b494e92893d472b8f0a6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterPrefab: {fileID: 114549851172937630, guid: 79595be7b9c28a94784d789f3ec009d2,
+  characterPrefab: {fileID: 114803103508440046, guid: 79595be7b9c28a94784d789f3ec009d2,
     type: 2}
   connection: {fileID: 175875619}
 --- !u!4 &915726823

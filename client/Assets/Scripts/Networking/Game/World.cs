@@ -7,7 +7,7 @@ using System.Threading;
 public class PlayerPawn
 {
     Vector2 m_position;
-    float m_radius = 2.5f;
+    float Radius {get { return PlayerState.GetRadiusByPower(m_power); } }
     float m_power = 0;
     float m_movementSpeed = 1;
     float m_laserLength = 12.5f;
@@ -100,6 +100,11 @@ public class PlayerPawn
 
     public float GetPower() { return m_power; }
 
+    public float GetLaserDamage()
+    {
+        return m_power*0.5f;
+    }
+
     public bool Intersects( SimpleRay2D ray )
     {
         Vector2 L = m_position - ray.origin;
@@ -109,10 +114,10 @@ public class PlayerPawn
             return false;
 
         float d2 = Vector2.Dot( L, L ) - tca * tca;
-        if ( d2 > m_radius * m_radius )
+        if ( d2 > Radius * Radius )
             return false;
 
-        float thc = m_radius - Mathf.Sqrt( d2 );
+        float thc = Radius - Mathf.Sqrt( d2 );
         float t0 = tca - thc;
         float t1 = tca + thc;
 
@@ -396,7 +401,7 @@ public class World
     {
         List< PlayerPawn > playersHit = CastRay( ray );
         Network.Log("Laser hits " + playersHit.Count + " players.");
-        float laserPower = owner.GetPower();
+        float laserPower = owner.GetLaserDamage();
         float powerAccumulator = 0.0f;
         for ( int i = 0; i < playersHit.Count; ++i )
         {
