@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Threading;
 
 public class Network
 {
@@ -40,6 +41,8 @@ public class Network
 
         private int m_lastReliableEventId = 0;
 
+        private Thread updateThread;
+
         private class REventIdPair
         {
             public int id;
@@ -64,6 +67,10 @@ public class Network
             m_server = server;
             World = new World();
             World.Init();
+            m_server.OnDisconnect += OnDisconnect;
+
+            updateThread = new Thread(TimelyCheck);
+            updateThread.Start();
 
             m_responseListener = new ReliableEventResponseListener((int i) => { TryReleaseReliable(i); });
             Network.AddListener(m_responseListener);
@@ -74,6 +81,12 @@ public class Network
             ReliableEventResponse response = new ReliableEventResponse();
             response.m_reliableEventId = reliableEventId;
             Send(response, userId, false);
+        }
+
+        void OnDisconnect(int id, bool afk)
+        {
+            World.RemovePlayer(id);
+            Network.Log("Player " + id + " DISCONNECTED " + (afk ? "(AFK)" : "(manually)"));
         }
 
         public bool Send( EventBase e, int connectionId, bool reliable = false, bool internalResend = false )
@@ -113,6 +126,17 @@ public class Network
             foreach (int i in toRemove)
             {
                 TryReleaseReliable(i);
+            }
+        }
+
+        void TimelyCheck() {
+            while (true) {
+                Thread.Sleep(1000);
+                var toDisconnect = World.GetPlayersWithNoNewPackages(5);
+                foreach (int i in toDisconnect)
+                {
+                    m_server.Disconnect(i, true);
+                }
             }
         }
 
@@ -169,6 +193,10 @@ public class Network
             }
         }
 
+        public void Send(ByteStreamWriter stream) {
+            m_client.Send(stream.GetBytes());
+        }
+
         public void ResendRemainingReliables() {
             foreach (var pair in m_reliablesToRepeat) {
                 Send(pair.Value, true, true);
@@ -185,6 +213,15 @@ public class Network
         }
 
         public void Shutdown() {
+            ByteStreamWriter writer = new ByteStreamWriter();
+            writer.WriteByte((byte)MsgFlags.ConnectionRequest);
+            writer.WriteByte((byte)HandshakeMessage.Disconnect);
+            writer.WriteInteger(ConnectionId);
+
+            for (int i = 0; i < 5; ++i) {
+                 Send(writer);
+            }
+
             m_client.Shutdown();
         }
     }

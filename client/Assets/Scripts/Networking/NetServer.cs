@@ -25,6 +25,9 @@ public class NetServer : IHanshakable {
     Dictionary<int, ConnectionEntity > m_entities = new Dictionary<int, ConnectionEntity>();
 
     List<PendingConnectionEntity> m_pending = new List<PendingConnectionEntity>();
+    List<int> m_toDisconnect = new List<int>();
+
+    public System.Action<int, bool> OnDisconnect;
 
     Listener m_listener;
 
@@ -95,13 +98,31 @@ public class NetServer : IHanshakable {
             HandshakeStepTwo(ce);
         } else if (type == HandshakeMessage.ACK) {
             int id = stream.ReadInt();
-            PendingConnectionEntity chosen = m_pending.Where(x => x.m_connectionId == id).FirstOrDefault();
+            PendingConnectionEntity chosen = m_pending.FirstOrDefault(x => x.m_connectionId == id);
             if (chosen != null) {
                 m_pending.Remove(chosen);
                 m_entities[chosen.m_connectionId] = new ConnectionEntity(chosen);
                 Network.Server.World.AddPlayer(chosen.m_connectionId);
             }
+        } else if (type == HandshakeMessage.Disconnect)
+        {
+            int id = stream.ReadInt();
+            Disconnect(id, false);
         }
+    }
+
+    public void Disconnect(int connectionId, bool afk)
+    {
+        ConnectionEntity ce = null;
+        m_entities.TryGetValue(connectionId, out ce);
+        if (ce != null)
+        {
+            ce.m_sender.Shutdown();
+            m_entities.Remove(connectionId);
+            OnDisconnect?.Invoke(connectionId, afk);
+        }
+        
+        
     }
 
     public void TryConnectToAllPending() {

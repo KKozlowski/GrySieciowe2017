@@ -25,6 +25,8 @@ public class PlayerPawn
     public float Power { get { return m_power; } }
     public Vector2 Position { get { return m_position; } }
 
+    public DateTime m_lastPackageTime;
+
     public int Id { get; private set; }
 
     public void Update( float dt )
@@ -40,7 +42,7 @@ public class PlayerPawn
             m_movementDirection = normalized;
             Console.WriteLine("New direction for "+ Id+ ": " + m_movementDirection.ToString());
         }
-        
+        m_lastPackageTime = DateTime.Now;
     }
 
     public void ShootAtDirection(Vector2 direction) {
@@ -144,6 +146,7 @@ public class PlayerPawn
         world = w;
         m_position = position;
         m_lastDeathTime = new DateTime();
+        m_lastPackageTime = DateTime.Now;
         Id = id;
     }
 }
@@ -171,7 +174,7 @@ public class World
             if (pawn != null) {
                 pawn.Move(input.m_direction);
             } else {
-                Console.WriteLine("InputEvent: Target pawn doesn't exist");
+                //Console.WriteLine("InputEvent: Target pawn doesn't exist");
             }
 
             return true;
@@ -436,6 +439,20 @@ public class World
             }
         }
 
+        return result;
+    }
+
+    public List<int> GetPlayersWithNoNewPackages(int secondsThreshold)
+    {
+        DateTime now = DateTime.Now;
+        List<int> result = new List<int>();
+        foreach (KeyValuePair<int, PlayerPawn> pair in m_players)
+        {
+            if ((now - pair.Value.m_lastPackageTime).Seconds > secondsThreshold)
+            {
+                result.Add(pair.Key);
+            }
+        }
         return result;
     }
 }

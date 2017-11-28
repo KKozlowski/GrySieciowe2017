@@ -11,7 +11,8 @@ using System.Net;
 public enum HandshakeMessage : byte {
     SYN,
     SYNACK,
-    ACK
+    ACK,
+    Disconnect
 }
 
 public interface IHanshakable {
