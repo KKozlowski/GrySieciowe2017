@@ -11,10 +11,13 @@ public class UiConnectWindow : MonoBehaviour
 
     [SerializeField] private PlayerConnection connection;
 
+    public static UiConnectWindow Me { get; private set; }
+
 	// Use this for initialization
 	void Start ()
 	{
 	    yourIpText.text = Dns.GetHostAddresses(Dns.GetHostName())[0].ToString();
+	    Me = this;
 	}
 
     public void Show()

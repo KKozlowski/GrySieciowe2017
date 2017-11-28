@@ -12,6 +12,7 @@ public class CharacterController : MonoBehaviour {
 
     [SerializeField]
     private bool m_isPlayer = false;
+    public bool IsPlayer { get { return m_isPlayer; } }
 
     public void Init(bool player) {
         m_isPlayer = player;

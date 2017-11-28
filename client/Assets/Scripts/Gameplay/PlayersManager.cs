@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -102,6 +103,7 @@ public class PlayersManager : MonoBehaviour {
         public PlayerState state;
 
         public CharacterController controller;
+        public DateTime lastUpdateTime;
     }
 
     private Dictionary<int, PlayerInstanceState> playerInstances 
@@ -126,6 +128,29 @@ public class PlayersManager : MonoBehaviour {
             shot.controller.MoveTo(shot.point);
             shot.controller.Shoot(shot.direction);
         }
+
+        bool playerRemoved = false;
+        DateTime now = DateTime.Now;
+        List<PlayerInstanceState> toRemove = new List<PlayerInstanceState>();
+        foreach (var pis in playerInstances)
+        {
+            if ((now - pis.Value.lastUpdateTime).Seconds > 2)
+                toRemove.Add(pis.Value);
+        }
+        foreach (PlayerInstanceState i in toRemove)
+        {
+            Debug.Log("Removed: " + i.controller.name);
+            if (i.controller.IsPlayer)
+                playerRemoved = true;
+            Destroy(i.controller.gameObject);
+            playerInstances.Remove(i.state.id);
+        }
+
+        if (playerRemoved)
+        {
+            Network.Client.Shutdown();
+            UiConnectWindow.Me.Show();
+        }
     }
 
     public void ApplyState(PlayerState ps) {
@@ -143,5 +168,6 @@ public class PlayersManager : MonoBehaviour {
         pis.state = ps;
         pis.controller.MoveTo(pis.state.position);
         pis.controller.Power = pis.state.power;
+        pis.lastUpdateTime = DateTime.Now;
     }
 }
