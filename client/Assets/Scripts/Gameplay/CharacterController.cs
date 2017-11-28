@@ -32,13 +32,13 @@ public class CharacterController : MonoBehaviour {
     {
         m_power = power;
         gameObject.SetActive(m_power>0);
-        float radius = PlayerState.GetRadiusByPower(m_power);
-        transform.localScale = new Vector3(radius, radius, radius);
+        float scale = PlayerState.GetRadiusByPower(m_power)*2;
+        transform.localScale = new Vector3(scale, scale, scale);
     }
 
     public void Shoot(Vector2 direction) {
         m_laser.SetPositions(
-            new Vector3[] { direction * 0.2f, direction * 100f }
+            new Vector3[] { Vector3.zero, direction * 100f }
             );
         StartCoroutine(shootEffect());
     }

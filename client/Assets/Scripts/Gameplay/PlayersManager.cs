@@ -129,6 +129,9 @@ public class PlayersManager : MonoBehaviour {
     }
 
     public void ApplyState(PlayerState ps) {
+        if (ps == null)
+            return;
+        ;
         PlayerInstanceState pis = null;
         if (!playerInstances.TryGetValue(ps.id, out pis)) {
             pis = new PlayerInstanceState();

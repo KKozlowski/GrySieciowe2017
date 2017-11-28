@@ -76,6 +76,9 @@ public class NetServer : IHanshakable {
         writer.WriteByte((byte)HandshakeMessage.SYNACK);
         writer.WriteInteger(con.m_connectionId);
         con.m_sender.Send(writer.GetBytes());
+        con.m_sender.Send(writer.GetBytes());
+        con.m_sender.Send(writer.GetBytes());
+        con.m_sender.Send(writer.GetBytes());
     }
 
     public void HandleConnectionData(HandshakeMessage type, ByteStreamReader stream, IPEndPoint endpoint) {
