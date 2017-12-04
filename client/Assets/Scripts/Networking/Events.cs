@@ -66,6 +66,10 @@ public abstract class EventBase
     /// <returns>Event type turned into a byte.</returns>
     public abstract byte GetId();
 
+    /// <summary>
+    /// Gets this event's type enum.
+    /// </summary>
+    /// <returns>EventType.</returns>
     public EventType GetEventType()
     {
         return (EventType)GetId();

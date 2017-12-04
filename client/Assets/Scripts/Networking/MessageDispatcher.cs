@@ -60,6 +60,9 @@ public class ReliableEventListener
     }
 }
 
+/// <summary>
+/// Stores event listeners and sends data for them.
+/// </summary>
 public class MessageDispatcher
 {
     List< IEventListener > m_listeners = new List<IEventListener>();
@@ -77,11 +80,19 @@ public class MessageDispatcher
         }
     }
 
+    /// <summary>
+    /// Adds a new listener to the collection
+    /// </summary>
+    /// <param name="listener">New listener.</param>
     public void AddListener( IEventListener listener )
     {
         m_listeners.Add( listener );
     }
 
+    /// <summary>
+    /// Removes the listener from collection.
+    /// </summary>
+    /// <param name="listener">The listener.</param>
     public void RemoveListener( IEventListener listener )
     {
         m_listeners.Remove( listener );

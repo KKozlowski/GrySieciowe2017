@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
 
+/// <summary>
+/// Player's data and behaviors in the World.
+/// </summary>
 public class PlayerPawn
 {
     Vector2 m_position;
@@ -151,6 +154,9 @@ public class PlayerPawn
     }
 }
 
+/// <summary>
+/// Data for a simple ray in the game's World.
+/// </summary>
 public class SimpleRay2D
 {
     public Vector2 origin;
@@ -158,6 +164,10 @@ public class SimpleRay2D
     public float length;
 }
 
+/// <summary>
+/// The entire gameplay on the server happens in here. It contains all the player references, listens to
+/// adequate events, and sends PlayerStates and other events to all the players.
+/// </summary>
 public class World
 {
     public class ProperInputListener : IEventListener {

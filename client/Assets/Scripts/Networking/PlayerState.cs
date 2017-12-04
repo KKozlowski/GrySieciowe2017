@@ -3,12 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using System;
-using Network = UnityEngine.Network;
 
+/// <summary>
+/// All the data that need to be sent from server to client about given player. Contains dirty/notDirty mechanism
+/// for sending only the changed data.
+/// </summary>
 public class PlayerState {
+    /// <summary>
+    /// Player's connection identificator.
+    /// </summary>
     public int id;
 
+    /// <summary>
+    /// The player's power (a.k.a. health and fire power)
+    /// </summary>
     public float power;
+
+    /// <summary>
+    /// The position of the player.
+    /// </summary>
     public Vector2 position;
 
     public const int maskOfHealthChange = 1 << 1;
@@ -64,6 +77,11 @@ public class PlayerState {
         return true;
     }
 
+    /// <summary>
+    /// Gets the radius the player should have based on his power
+    /// </summary>
+    /// <param name="power">The power.</param>
+    /// <returns>The calculated radius</returns>
     public static float GetRadiusByPower(float power)
     {
         return 0.75f + Mathf.Sqrt(power)*0.5f;

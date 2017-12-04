@@ -5,11 +5,15 @@ using System.Collections.Concurrent;
 using System.Threading;
 
 /// <summary>
-/// BASE CLASS FOR THE NETWORK LAYER.
+/// <c>BASE CLASS FOR THE NETWORK LAYER</c>.
 /// It needs to be initialized to allow server or client behaviors.
 /// </summary>
 public class Network
 {
+    /// <summary>
+    /// Listens for responses to reliable events and calls a callback whenever it gets one.
+    /// Can be used by both Client and Server.
+    /// </summary>
     private class ReliableEventResponseListener : IEventListener
     {
         private Action<int> callback;
