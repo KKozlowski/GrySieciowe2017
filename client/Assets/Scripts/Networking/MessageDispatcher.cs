@@ -1,16 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 
+/// <summary>
+/// Interface for an event listener.
+/// </summary>
 public interface IEventListener
 {
+    /// <summary>
+    /// Gets the type of the events this instance handles.
+    /// </summary>
+    /// <returns>EventType.</returns>
     EventType GetEventType();
+    /// <summary>
+    /// Handles an event.
+    /// </summary>
+    /// <param name="e">The event.</param>
+    /// <returns><c>true</c> if this is supposed to be the last handler of the event.</returns>
     bool Execute( EventBase e );
 }
 
+/// <summary>
+/// Additional logic for IEventListener that listen to reliable events.
+/// </summary>
 public class ReliableEventListener
 {
     Dictionary<int, HashSet<int>> executedEventsForEachUser = new Dictionary<int, HashSet<int>>();
 
+    /// <summary>
+    /// Marks given event (by id) from given user as executed.
+    /// </summary>
+    /// <param name="user">The client identifier. If it was received from server, it can be -1</param>
+    /// <param name="eventId">The event identifier.</param>
     protected void AddExecuted(int user, int eventId)
     {
         HashSet<int> list = null;
@@ -22,6 +42,12 @@ public class ReliableEventListener
         list.Add(eventId);
     }
 
+    /// <summary>
+    /// Checks if given event (by id) from given user was executed.
+    /// </summary>
+    /// <param name="user">The user identifier.</param>
+    /// <param name="eventId">The event identifier.</param>
+    /// <returns><c>true</c> if was executed, <c>false</c> otherwise. If it was executed already, the event should be confirmed anyway, but not executed.</returns>
     public bool WasExecuted(int user, int eventId)
     {
         HashSet<int> list = null;

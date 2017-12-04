@@ -5,11 +5,18 @@ using System.Net;
 using System.Net.Sockets;
 using UnityEngine;
 
+/// <summary>
+/// Listens for data from given ip and port, then sends them through callback. Based on UDP.
+/// </summary>
 public class Listener
 {
     UdpClient m_udp;
     Thread m_receivingThread;
     int m_port;
+
+    /// <summary>
+    /// Methods that is called when new data is received.
+    /// </summary>
     Action< byte[], IPEndPoint> m_dataCallback;
 
     bool m_initialized = false;
@@ -28,6 +35,11 @@ public class Listener
         m_port = port;
     }
 
+    /// <summary>
+    /// Starts listening using thread or recursive method.
+    /// </summary>
+    /// <param name="port">Port to listen.</param>
+    /// <param name="withThread">if set to <c>true</c>, starts listning using a new thread. Otherwise it uses UdpClient.BeginListening(...) method.</param>
     public void Init( int port, bool withThread = true )
     {
         BasicInit(port);
@@ -63,6 +75,9 @@ public class Listener
         m_dataCallback = onData;
     }
 
+    /// <summary>
+    /// Listening thread logic.
+    /// </summary>
     void ReceiveProc()
     {
         IPEndPoint endpoint = new IPEndPoint( IPAddress.Any, m_port );
@@ -78,6 +93,10 @@ public class Listener
         }
     }
 
+    /// <summary>
+    /// Listening logic based on UdpClient.BeginReceive(...). Can be threadless.
+    /// </summary>
+    /// <param name="res">The previous receiving result.</param>
     private void ReceiveRecur(IAsyncResult res) {
         IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, m_port);
         byte[] data = m_udp.EndReceive(res, ref endpoint);

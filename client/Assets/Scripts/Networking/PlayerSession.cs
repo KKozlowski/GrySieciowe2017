@@ -10,11 +10,3 @@ public class PlayerSession
         return m_connection;
     }
 }
-
-public class ServerData
-{
-}
-
-public class ClientData
-{
-}

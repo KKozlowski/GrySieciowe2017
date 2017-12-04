@@ -3,12 +3,27 @@ using System.Net;
 using System;
 using System.Linq;
 
+/// <summary>
+/// The class responsible for server behaviors: storing all the client connections and sending data to the clients.
+/// </summary>
 public class NetServer : IHanshakable {
+    /// <summary>
+    /// Basic class for the key connection data.
+    /// </summary>
     abstract class BaseConnectionEntity {
+        /// <summary>
+        /// Can send data to the corresponding client.
+        /// </summary>
         public Connection m_sender;
+        /// <summary>
+        /// The connection identifier for corresponding client
+        /// </summary>
         public int m_connectionId;
     }
 
+    /// <summary>
+    /// Data of a client who completed handshake step three and thus is successfully connected.
+    /// </summary>
     class ConnectionEntity : BaseConnectionEntity
     {
         public ConnectionEntity(PendingConnectionEntity pending) {
@@ -17,6 +32,9 @@ public class NetServer : IHanshakable {
         }
     }
 
+    /// <summary>
+    /// Data of a client who completed handshake step one.
+    /// </summary>
     class PendingConnectionEntity : BaseConnectionEntity {
         public DateTime m_pendingStartTime;
     }
@@ -27,6 +45,9 @@ public class NetServer : IHanshakable {
     List<PendingConnectionEntity> m_pending = new List<PendingConnectionEntity>();
     List<int> m_toDisconnect = new List<int>();
 
+    /// <summary>
+    /// Called when player is disconnected from server. It passes connectionId and [if was disconnected by afk] bool.
+    /// </summary>
     public System.Action<int, bool> OnDisconnect;
 
     Listener m_listener;
@@ -34,11 +55,21 @@ public class NetServer : IHanshakable {
     int m_sendingPort;
     int m_receivePort;
 
+    /// <summary>
+    /// Time after which server stops performing handshake step two on pending connection.
+    /// </summary>
     float timeToStopTryingWithPending = 10f;
+    /// <summary>
+    /// Times after which pending connection is removed if it didn't react at all.
+    /// </summary>
     float timeToRemovePending = 15f;
 
     private MessageDeserializer deserializer;
 
+    /// <summary>
+    /// Initializes server listening.
+    /// </summary>
+    /// <param name="sendingPort">The server's sending port. Receiving port is set to sendingPort+1</param>
     public void Start( int sendingPort )
     {
         m_sendingPort = sendingPort;
@@ -111,6 +142,11 @@ public class NetServer : IHanshakable {
         }
     }
 
+    /// <summary>
+    /// Disconnects a given client
+    /// </summary>
+    /// <param name="connectionId">The connection identifier.</param>
+    /// <param name="afk">if set to <c>true</c>, the reason was player afk (lack of new packeges coming).</param>
     public void Disconnect(int connectionId, bool afk)
     {
         ConnectionEntity ce = null;
@@ -125,6 +161,9 @@ public class NetServer : IHanshakable {
         
     }
 
+    /// <summary>
+    /// Loops through all the pending connections and performs handshake step two on them. If they are still idle for a long time, connections get canceled.
+    /// </summary>
     public void TryConnectToAllPending() {
         List<PendingConnectionEntity> toRemove = new List<PendingConnectionEntity>();
         foreach(PendingConnectionEntity pce in m_pending) {

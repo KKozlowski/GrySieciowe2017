@@ -1,6 +1,9 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 
+/// <summary>
+/// Sends data to the ip and port given during initialization.
+/// </summary>
 public class Connection {
     UdpClient m_udp;
     bool m_initialized = false;
